@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Mike's Tic-Tac-Toe</title>
+  <meta charset="UTF-8"> 
+  <link rel="stylesheet" type="text/css" href="TicTacToeStyles.css" />
+  <script type="text/javascript" src="js/TicTacToeScript.js"></script>
+</head>
+
+<body>
+  <div id="inputDiv">
+    <label for="numRowsInput">How many rows should the square board have? (Must be between 3 and 10.)</label>
+    <input type="number" id="numRowsInput" name="numRowsInput" min="3" max="10" value="3">
+    <button onclick="gameOn(masterData)">Submit</button>
+  </div>
+
+  <table>
+    <thead></thead>
+    <tbody></tbody>
+    <tfoot></tfoot>
+  </table> 
+
+  <p id="announceWinner"></p>
+  <button onclick="resetGame(masterData)" id="playAgain" class = "hidden">Play again?</button>
+</body>
+</html>

@@ -10,7 +10,14 @@ let masterData = {
 function gameOn(masterData) {
 
   // grab number of rows from user input, add it to masterData object:
-  masterData.numRows = Number(document.querySelector('#numRowsInput').value);
+  let num = Number(document.querySelector('#numRowsInput').value);
+  if (num && num >= 3 && num <= 10) {
+    masterData.numRows = num;
+    document.querySelector('#warning').removeAttribute('class');
+  } else {
+    document.querySelector('#warning').setAttribute('class', 'warning');
+    return;
+  }
 
   // make an object for every row, column, and diagonal (for tracking win/tie conditions)
   function arrayFiller(arr, upperBound) {
@@ -41,6 +48,7 @@ function gameOn(masterData) {
 
   function turnCellIntoButton(currCell, cellPos) {
     currCell.setAttribute('onclick', `moveMade(${cellPos}, masterData)`);
+    currCell.className += ' clickable';
   }
 
   // top row
@@ -89,6 +97,7 @@ function moveMade(cellRow, cellCol, masterData) {
   // make square un-clickable
   let currCell = document.querySelector('table').rows[cellRow].cells[cellCol];
   currCell.removeAttribute('onclick');
+  currCell.className = currCell.className.replace(/(?:^|\s)clickable(?!\S)/g, '');
 
   // mark square with X or O
   let mark = (player === 1) ? document.createTextNode('X') : document.createTextNode('O');
@@ -129,7 +138,10 @@ function moveMade(cellRow, cellCol, masterData) {
 
     // un-buttonize the cells
     let allCells = document.querySelectorAll('td');
-    allCells.forEach((cell) => {cell.removeAttribute('onclick');});
+    allCells.forEach((cell) => {
+      cell.removeAttribute('onclick');
+      cell.className = cell.className.replace(/(?:^|\s)clickable(?!\S)/g, '');
+    });
 
     // add play again option (un-hide "Play Again" button)
     let playAgain = document.querySelector('#playAgain');

@@ -9,7 +9,7 @@
 
 <body>
   <div id="inputDiv">
-    <label for="numRowsInput">How many rows should the square board have? (Must be between 3 and 10.)</label>
+    <label for="numRowsInput">How many rows/columns should the board have? <span id="warning">(Must be between 3 and 10.)</span></label>
     <input type="number" id="numRowsInput" name="numRowsInput" min="3" max="10" value="3">
     <button onclick="gameOn(masterData)">Submit</button>
   </div>
@@ -20,7 +20,10 @@
     <tfoot></tfoot>
   </table> 
 
-  <p id="announceWinner"></p>
-  <button onclick="resetGame(masterData)" id="playAgain" class = "hidden">Play again?</button>
+  <div id="winnerDiv">
+    <p id="announceWinner"></p>
+    <button onclick="resetGame(masterData)" id="playAgain" class = "hidden">Play again?</button>
+  </div>
+
 </body>
 </html>

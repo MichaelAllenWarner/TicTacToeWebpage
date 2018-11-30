@@ -1,4 +1,4 @@
-let masterData = {
+const masterData = {
   rowArray: [],
   columnArray: [],
   diagArray: [], // will have 2 elements: 0th for diag from top-left, 1st for diag from top-right
@@ -16,10 +16,18 @@ let masterData = {
 };
 
 
+// allows pushing enter key in input box to start game (as alternative to clicking Submit button)
+function playGameIfEnterKey(key, gameOn, masterData) {
+  if (key.keyCode === 13) {
+    gameOn(masterData);
+  }
+} 
+
+
 function gameOn(masterData) {
 
   // grab number of rows from user input, add it to masterData object:
-  let num = Number(document.querySelector('#numRowsInput').value);
+  const num = Number(document.querySelector('input').value);
   if (num && num >= 3 && num <= 10) {
     masterData.numRows = num;
     document.querySelector('#warning').classList.remove('warning');
@@ -52,9 +60,9 @@ function gameOn(masterData) {
 
   // construct board (fill in table)
 
-  let tableHead = document.querySelector('thead');
-  let tableBody = document.querySelector('tbody');
-  let tableFoot = document.querySelector('tfoot');
+  const tableHead = document.querySelector('thead');
+  const tableBody = document.querySelector('tbody');
+  const tableFoot = document.querySelector('tfoot');
 
   function turnCellIntoButton(currCell, cellPos) {
     currCell.setAttribute('onclick', `moveMade(${cellPos}, masterData)`);
@@ -62,7 +70,7 @@ function gameOn(masterData) {
   }
 
   // top row
-  let topRow = tableHead.insertRow(-1);
+  const topRow = tableHead.insertRow(-1);
   for (let i = 0; i < masterData.numRows; i++) {
     let currCell = topRow.insertCell(-1);
     if (i !== 0 && i !== masterData.numRows - 1) {
@@ -73,7 +81,7 @@ function gameOn(masterData) {
   }
 
   // body rows
-  let numBodyRows = masterData.numRows - 2;
+  const numBodyRows = masterData.numRows - 2;
   for (let i = 0; i < numBodyRows; i++) {
     let currRow = tableBody.insertRow(-1);
     for (let j = 0; j < masterData.numRows; j++) {
@@ -87,7 +95,7 @@ function gameOn(masterData) {
   }
 
   // bottom row
-  let bottomRow = tableFoot.insertRow(-1);
+  const bottomRow = tableFoot.insertRow(-1);
   for (let i = 0; i < masterData.numRows; i++) {
     let currCell = bottomRow.insertCell(-1);
     if (i !== 0 && i !== masterData.numRows - 1) {
@@ -101,18 +109,18 @@ function gameOn(masterData) {
 
 function moveMade(cellRow, cellCol, masterData) {
 
-  let currCell = document.querySelector('table').rows[cellRow].cells[cellCol];
-  let player = (masterData.turnCounter % 2 === 0) ? 1 : 2;
-  let otherPlayer = (player === 1) ? 2 : 1;
-  let playedOnDiagonal0 = (cellRow === cellCol) ? true : false;
-  let playedOnDiagonal1 = (cellRow + cellCol === masterData.numRows - 1) ? true : false;
+  const currCell = document.querySelector('table').rows[cellRow].cells[cellCol];
+  const player = (masterData.turnCounter % 2 === 0) ? 1 : 2;
+  const otherPlayer = (player === 1) ? 2 : 1;
+  const playedOnDiagonal0 = (cellRow === cellCol) ? true : false;
+  const playedOnDiagonal1 = (cellRow + cellCol === masterData.numRows - 1) ? true : false;
 
   // make square un-clickable
   currCell.removeAttribute('onclick');
   currCell.classList.remove('clickable');
 
   // mark square with X or O
-  let mark = (player === 1) ? document.createTextNode('X') : document.createTextNode('O');
+  const mark = (player === 1) ? document.createTextNode('X') : document.createTextNode('O');
   currCell.appendChild(mark);
 
 
@@ -151,9 +159,8 @@ function moveMade(cellRow, cellCol, masterData) {
   function winSequence(winner) {
 
     // announce winner or tie game
-    let winMessage = (winner) ? document.createTextNode(`Player ${winner} wins!`) : document.createTextNode('Tie game.');
-    let winp = document.querySelector('#announceWinner');
-    winp.appendChild(winMessage);
+    const winMessage = (winner) ? document.createTextNode(`Player ${winner} wins!`) : document.createTextNode('Tie game.');
+    document.querySelector('#announceWinner').appendChild(winMessage);
 
     // un-buttonize the cells
     let allCells = document.querySelectorAll('td');
@@ -226,20 +233,20 @@ function moveMade(cellRow, cellCol, masterData) {
   }
 
   // for row
-  let addedForRow = tieCounterAdder(masterData.rowArray[cellRow].p1WasHere, masterData.rowArray[cellRow].p2WasHere, masterData.rowArray[cellRow].addedToTieCounter, masterData);
+  const addedForRow = tieCounterAdder(masterData.rowArray[cellRow].p1WasHere, masterData.rowArray[cellRow].p2WasHere, masterData.rowArray[cellRow].addedToTieCounter, masterData);
   if (addedForRow) {
     masterData.rowArray[cellRow].addedToTieCounter = true;
   }
 
   // for column
-  let addedForCol = tieCounterAdder(masterData.columnArray[cellCol].p1WasHere, masterData.columnArray[cellCol].p2WasHere, masterData.columnArray[cellCol].addedToTieCounter, masterData);
+  const addedForCol = tieCounterAdder(masterData.columnArray[cellCol].p1WasHere, masterData.columnArray[cellCol].p2WasHere, masterData.columnArray[cellCol].addedToTieCounter, masterData);
   if (addedForCol) {
     masterData.columnArray[cellCol].addedToTieCounter = true;
   }
 
   // for diagonal 0 if applicable
   if (playedOnDiagonal0) {
-    let addedForDiag0 = tieCounterAdder(masterData.diagArray[0].p1WasHere, masterData.diagArray[0].p2WasHere, masterData.diagArray[0].addedToTieCounter, masterData);
+    const addedForDiag0 = tieCounterAdder(masterData.diagArray[0].p1WasHere, masterData.diagArray[0].p2WasHere, masterData.diagArray[0].addedToTieCounter, masterData);
     if (addedForDiag0) {
       masterData.diagArray[0].addedToTieCounter = true;
     }
@@ -247,7 +254,7 @@ function moveMade(cellRow, cellCol, masterData) {
 
   // for diagonal 1 if applicable
   if (playedOnDiagonal1) {
-    let addedForDiag1 = tieCounterAdder(masterData.diagArray[1].p1WasHere, masterData.diagArray[1].p2WasHere, masterData.diagArray[1].addedToTieCounter, masterData);
+    const addedForDiag1 = tieCounterAdder(masterData.diagArray[1].p1WasHere, masterData.diagArray[1].p2WasHere, masterData.diagArray[1].addedToTieCounter, masterData);
     if (addedForDiag1) {
       masterData.diagArray[1].addedToTieCounter = true;
     }
@@ -274,7 +281,7 @@ function playAgain(masterData, gameOn) {
   document.querySelector('#winnerDiv').classList.add('hidden');
 
   // reset masterData object, but preserve masterData.numRows
-  let numRows = masterData.numRows;
+  const numRows = masterData.numRows;
   masterData.dataReset();
   masterData.numRows = numRows;
 

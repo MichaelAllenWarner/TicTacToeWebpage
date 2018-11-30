@@ -162,8 +162,8 @@ function moveMade(cellRow, cellCol, masterData) {
       cell.classList.remove('clickable');
     });
 
-    // add play again option (un-hide "Play Again" button)
-    document.querySelector('#playAgain').classList.remove('hidden');
+    // add play again option (un-hide winnerDiv)
+    document.querySelector('#winnerDiv').classList.remove('hidden');
   }
 
 
@@ -265,13 +265,34 @@ function moveMade(cellRow, cellCol, masterData) {
 }
 
 
-function resetGame(masterData) {
+function playAgain(masterData, gameOn) {
 
   // delete winner announcement text from its <p>
   document.querySelector('#announceWinner').textContent = '';
 
-  // hide Play Again button
-  document.querySelector('#playAgain').classList.add('hidden');
+  // hide winnerDiv
+  document.querySelector('#winnerDiv').classList.add('hidden');
+
+  // reset masterData object, but preserve masterData.numRows
+  let numRows = masterData.numRows;
+  masterData.dataReset();
+  masterData.numRows = numRows;
+
+  // delete all table rows
+  let allRows = document.querySelectorAll('tr');
+  allRows.forEach((row) => {row.parentNode.removeChild(row);});
+
+  gameOn(masterData)
+}
+
+
+function resizeBoard(masterData) {
+  
+  // delete winner announcement text from its <p>
+  document.querySelector('#announceWinner').textContent = '';
+
+  // hide winnerDiv
+  document.querySelector('#winnerDiv').classList.add('hidden');
 
   // reset masterData object
   masterData.dataReset();
@@ -282,5 +303,4 @@ function resetGame(masterData) {
 
   // un-hide inputDiv
   document.querySelector('#inputDiv').classList.remove('hidden');
-
 }

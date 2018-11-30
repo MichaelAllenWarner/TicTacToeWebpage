@@ -48,6 +48,10 @@ td.clickable:active {
   transition-duration: .5s;
 }
 
+.winning {
+  color: cornsilk;
+}
+
 .hidden {
   display: none;
 }

@@ -173,6 +173,7 @@ function moveMade(cellRow, cellCol, masterData) {
   winner = winnerChecker(masterData.rowArray[cellRow].totalPlays, masterData.numRows, masterData.rowArray[cellRow][`p${otherPlayer}WasHere`], player);
   if (winner) {
     winSequence(winner);
+    document.querySelector('table').rows[cellRow].classList.add('winning');
     return;
   }
 
@@ -180,6 +181,9 @@ function moveMade(cellRow, cellCol, masterData) {
   winner = winnerChecker(masterData.columnArray[cellCol].totalPlays, masterData.numRows, masterData.columnArray[cellCol][`p${otherPlayer}WasHere`], player);
   if (winner) {
     winSequence(winner);
+    for (let i = 0; i < masterData.numRows; i++) {
+      document.querySelector('table').rows[i].cells[cellCol].classList.add('winning');
+    }
     return;
   }
  
@@ -188,6 +192,9 @@ function moveMade(cellRow, cellCol, masterData) {
     winner = winnerChecker(masterData.diagArray[0].totalPlays, masterData.numRows, masterData.diagArray[0][`p${otherPlayer}WasHere`], player);
     if (winner) {
       winSequence(winner);
+      for (let i = 0; i < masterData.numRows; i++) {
+        document.querySelector('table').rows[i].cells[i].classList.add('winning');
+      }
       return;
     }
   }
@@ -197,6 +204,9 @@ function moveMade(cellRow, cellCol, masterData) {
     winner = winnerChecker(masterData.diagArray[1].totalPlays, masterData.numRows, masterData.diagArray[1][`p${otherPlayer}WasHere`], player);
     if (winner) {
       winSequence(winner);
+      for (let i = 0; i < masterData.numRows; i ++) {
+        document.querySelector('table').rows[i].cells[masterData.numRows - 1 - i].classList.add('winning');
+      }
       return;
     }
   }

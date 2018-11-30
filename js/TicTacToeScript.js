@@ -27,7 +27,7 @@ function playGameIfEnterKey(key, gameOn, masterData) {
 function gameOn(masterData) {
 
   // grab number of rows from user input, add it to masterData object:
-  const num = Number(document.querySelector('input').value);
+  const num = Number(document.querySelector('#numRowsInput').value);
   if (num && num >= 3 && num <= 10) {
     masterData.numRows = num;
     document.querySelector('#warning').classList.remove('warning');

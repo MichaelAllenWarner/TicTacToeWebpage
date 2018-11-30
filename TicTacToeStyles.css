@@ -7,6 +7,10 @@ button, input {
   font-size: large;
 }
 
+input {
+  background-color: cornsilk;
+}
+
 table {
   border-collapse: collapse;
   margin: 5em auto;

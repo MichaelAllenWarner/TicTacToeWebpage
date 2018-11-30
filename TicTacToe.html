@@ -4,14 +4,13 @@
   <title>Mike's Tic-Tac-Toe</title>
   <meta charset="UTF-8"> 
   <link rel="stylesheet" type="text/css" href="TicTacToeStyles.css" />
-  <script type="text/javascript" src="js/TicTacToeScript.js"></script>
 </head>
 
 <body>
   <div id="inputDiv">
     <label for="numRowsInput">How many rows/columns should the board have? <span id="warning">(Must be between 3 and 10.)</span></label>
-    <input onkeyup="playGameIfEnterKey(event, gameOn, masterData)" id="numRowsInput" type="number" min="3" max="10" value="3">
-    <button onclick="gameOn(masterData)">Submit</button>
+    <input id="numRowsInput" type="number" min="3" max="10" value="3">
+    <button id ="numRowsButton">Submit</button>
   </div>
 
   <table>
@@ -22,9 +21,10 @@
 
   <div id="winnerDiv" class="hidden">
     <p id="announceWinner"></p>
-    <button onclick="playAgain(masterData, gameOn)">Play again</button>
-    <button onclick="resizeBoard(masterData)">Change size</button>
+    <button id="playAgainButton">Play again</button>
+    <button id ="changeSizeButton">Change size</button>
   </div>
 
+  <script type="text/javascript" src="js/TicTacToeScript.js"></script>
 </body>
 </html>

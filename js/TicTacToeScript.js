@@ -16,13 +16,6 @@ const masterData = {
 };
 
 
-// allows pushing enter key in input box to start game (as alternative to clicking Submit button)
-function playGameIfEnterKey(key, gameOn, masterData) {
-  if (key.keyCode === 13) {
-    gameOn(masterData);
-  }
-} 
-
 
 function gameOn(masterData) {
 
@@ -311,3 +304,21 @@ function resizeBoard(masterData) {
   // un-hide inputDiv
   document.querySelector('#inputDiv').classList.remove('hidden');
 }
+
+
+
+// allows pushing enter key in input box to start game
+document.querySelector('#numRowsInput').onkeyup = (event) => {
+  if (event.keyCode === 13) {
+    gameOn(masterData);
+  }
+};
+
+// allows pushing Submit button to start game
+document.querySelector('#numRowsButton').onclick = () => {gameOn(masterData)};
+
+// allows pushing Play Again button to play again
+document.querySelector('#playAgainButton').onclick = () => {playAgain(masterData, gameOn)};
+
+// allows pushing Change Size button to change size and play again
+document.querySelector('#changeSizeButton').onclick = () => {resizeBoard(masterData)};

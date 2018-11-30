@@ -13,9 +13,9 @@ function gameOn(masterData) {
   let num = Number(document.querySelector('#numRowsInput').value);
   if (num && num >= 3 && num <= 10) {
     masterData.numRows = num;
-    document.querySelector('#warning').removeAttribute('class');
+    document.querySelector('#warning').classList.remove('warning');
   } else {
-    document.querySelector('#warning').setAttribute('class', 'warning');
+    document.querySelector('#warning').classList.add('warning');
     return;
   }
 
@@ -37,8 +37,7 @@ function gameOn(masterData) {
 
 
   // hide inputDiv:
-  let rowEntryDiv = document.querySelector('#inputDiv');
-  rowEntryDiv.setAttribute('class', 'hidden');
+  document.querySelector('#inputDiv').classList.add('hidden');
 
 
   // construct board (fill in table)
@@ -48,7 +47,7 @@ function gameOn(masterData) {
 
   function turnCellIntoButton(currCell, cellPos) {
     currCell.setAttribute('onclick', `moveMade(${cellPos}, masterData)`);
-    currCell.className += ' clickable';
+    currCell.classList.add('clickable');
   }
 
   // top row
@@ -56,7 +55,7 @@ function gameOn(masterData) {
   for (let i = 0; i < masterData.numRows; i++) {
     let currCell = topRow.insertCell(-1);
     if (i !== 0 && i !== masterData.numRows - 1) {
-      currCell.setAttribute('class', 'topOrBottomEdge');
+      currCell.classList.add('topOrBottomEdge');
     }
     let cellPos = [0, i];
     turnCellIntoButton(currCell, cellPos);
@@ -69,7 +68,7 @@ function gameOn(masterData) {
     for (let j = 0; j < masterData.numRows; j++) {
       let currCell = currRow.insertCell(-1);
       if (j === 0 || j === masterData.numRows - 1) {
-        currCell.setAttribute('class', 'bodyEdge');
+        currCell.classList.add('bodyEdge');
       }
       let cellPos = [i + 1, j];
       turnCellIntoButton(currCell, cellPos);
@@ -81,7 +80,7 @@ function gameOn(masterData) {
   for (let i = 0; i < masterData.numRows; i++) {
     let currCell = bottomRow.insertCell(-1);
     if (i !== 0 && i !== masterData.numRows - 1) {
-      currCell.setAttribute('class', 'topOrBottomEdge');
+      currCell.classList.add('topOrBottomEdge');
     }
     let cellPos = [masterData.numRows - 1, i];
     turnCellIntoButton(currCell, cellPos);
@@ -97,7 +96,7 @@ function moveMade(cellRow, cellCol, masterData) {
   // make square un-clickable
   let currCell = document.querySelector('table').rows[cellRow].cells[cellCol];
   currCell.removeAttribute('onclick');
-  currCell.className = currCell.className.replace(/(?:^|\s)clickable(?!\S)/g, '');
+  currCell.classList.remove('clickable');
 
   // mark square with X or O
   let mark = (player === 1) ? document.createTextNode('X') : document.createTextNode('O');
@@ -140,12 +139,11 @@ function moveMade(cellRow, cellCol, masterData) {
     let allCells = document.querySelectorAll('td');
     allCells.forEach((cell) => {
       cell.removeAttribute('onclick');
-      cell.className = cell.className.replace(/(?:^|\s)clickable(?!\S)/g, '');
+      cell.classList.remove('clickable');
     });
 
     // add play again option (un-hide "Play Again" button)
-    let playAgain = document.querySelector('#playAgain');
-    playAgain.removeAttribute('class');
+    document.querySelector('#playAgain').classList.remove('hidden');
   }
 
 
@@ -244,8 +242,7 @@ function resetGame(masterData) {
   document.querySelector('#announceWinner').textContent = '';
 
   // hide Play Again button
-  let playAgain = document.querySelector('#playAgain');
-  playAgain.setAttribute('class', 'hidden');
+  document.querySelector('#playAgain').classList.add('hidden');
 
   // reset masterData object
   masterData.rowArray = [];
@@ -260,7 +257,6 @@ function resetGame(masterData) {
   allRows.forEach((row) => {row.parentNode.removeChild(row);});
 
   // un-hide inputDiv
-  let rowEntryDiv = document.querySelector('#inputDiv');
-  rowEntryDiv.removeAttribute('class');
+  document.querySelector('#inputDiv').classList.remove('hidden');
 
 }

@@ -203,43 +203,42 @@ function moveMade(cellRow, cellCol, masterData) {
 
 
 
-  // there's no winner, so add 1 to tieCounter for each row, column, and applicable diagonal that is
-  // un-winnable (both players have played in it) AND has not already been included in the tieCounter tally
+  // there's no winner, so add 1 to tieCounter for each row, column, and applicable diagonal that is freshly
+  // un-winnable (both players have played in it AND it hasn't already been included in the tieCounter tally).
+  // After adding that 1, set addedToTieCounter property to true in the row/col/diag object, so that
+  // no row/col/diag can be counted toward the tieCounter tally more than once.
 
-  function tieCounterTest(p1Status, p2Status, addedToTieCounter) {
+  function tieCounterAdder(p1Status, p2Status, addedToTieCounter, masterData) {
     if (p1Status === true && p2Status === true && addedToTieCounter === false) {
+      masterData.tieCounter++;
       return true;
     }
   }
 
   // for row
-  let rowTieCounterTest = tieCounterTest(masterData.rowArray[cellRow].p1WasHere, masterData.rowArray[cellRow].p2WasHere, masterData.rowArray[cellRow].addedToTieCounter);
-  if (rowTieCounterTest) {
-    masterData.tieCounter++;
+  let addedForRow = tieCounterAdder(masterData.rowArray[cellRow].p1WasHere, masterData.rowArray[cellRow].p2WasHere, masterData.rowArray[cellRow].addedToTieCounter, masterData);
+  if (addedForRow) {
     masterData.rowArray[cellRow].addedToTieCounter = true;
   }
 
   // for column
-  let columnTieCounterTest = tieCounterTest(masterData.columnArray[cellCol].p1WasHere, masterData.columnArray[cellCol].p2WasHere, masterData.columnArray[cellCol].addedToTieCounter);
-  if (columnTieCounterTest) {
-    masterData.tieCounter++;
+  let addedForCol = tieCounterAdder(masterData.columnArray[cellCol].p1WasHere, masterData.columnArray[cellCol].p2WasHere, masterData.columnArray[cellCol].addedToTieCounter, masterData);
+  if (addedForCol) {
     masterData.columnArray[cellCol].addedToTieCounter = true;
   }
 
   // for diagonal 0 if applicable
   if (playedOnDiagonal0) {
-    let diag0TieCounterTest = tieCounterTest(masterData.diagArray[0].p1WasHere, masterData.diagArray[0].p2WasHere, masterData.diagArray[0].addedToTieCounter);
-    if (diag0TieCounterTest) {
-      masterData.tieCounter++;
+    let addedForDiag0 = tieCounterAdder(masterData.diagArray[0].p1WasHere, masterData.diagArray[0].p2WasHere, masterData.diagArray[0].addedToTieCounter, masterData);
+    if (addedForDiag0) {
       masterData.diagArray[0].addedToTieCounter = true;
     }
   }
 
   // for diagonal 1 if applicable
   if (playedOnDiagonal1) {
-    let diag1TieCounterTest = tieCounterTest(masterData.diagArray[1].p1WasHere, masterData.diagArray[1].p2WasHere, masterData.diagArray[1].addedToTieCounter);
-    if (diag1TieCounterTest) {
-      masterData.tieCounter++;
+    let addedForDiag1 = tieCounterAdder(masterData.diagArray[1].p1WasHere, masterData.diagArray[1].p2WasHere, masterData.diagArray[1].addedToTieCounter, masterData);
+    if (addedForDiag1) {
       masterData.diagArray[1].addedToTieCounter = true;
     }
   }

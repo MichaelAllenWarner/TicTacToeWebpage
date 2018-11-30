@@ -159,12 +159,14 @@ function moveMade(cellRow, cellCol, masterData) {
   winner = winnerChecker(masterData.rowArray[cellRow].totalPlays, masterData.numRows, masterData.rowArray[cellRow][`p${otherPlayer}WasHere`], player);
   if (winner) {
     winSequence(winner);
+    return;
   }
 
   // check column
   winner = winnerChecker(masterData.columnArray[cellCol].totalPlays, masterData.numRows, masterData.columnArray[cellCol][`p${otherPlayer}WasHere`], player);
   if (winner) {
     winSequence(winner);
+    return;
   }
  
   // check for winner in diagonal 0 if applicable
@@ -172,6 +174,7 @@ function moveMade(cellRow, cellCol, masterData) {
     winner = winnerChecker(masterData.diagArray[0].totalPlays, masterData.numRows, masterData.diagArray[0][`p${otherPlayer}WasHere`], player);
     if (winner) {
       winSequence(winner);
+      return;
     }
   }
 
@@ -180,6 +183,7 @@ function moveMade(cellRow, cellCol, masterData) {
     winner = winnerChecker(masterData.diagArray[1].totalPlays, masterData.numRows, masterData.diagArray[1][`p${otherPlayer}WasHere`], player);
     if (winner) {
       winSequence(winner);
+      return;
     }
   }
 

@@ -37,7 +37,7 @@ td.topOrBottomEdge {
 }
 
 td.clickable:hover {
-  background-color: beige;
+  background-color: cornsilk;
   cursor: grab;
   transition-duration: 1s;
 }

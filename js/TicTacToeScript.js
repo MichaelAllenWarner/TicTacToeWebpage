@@ -28,20 +28,20 @@ function cellClickEventHandler() {
 function setUpOnLoadEventListeners() {
 
   // allows pushing enter key in input box to start game
-  document.querySelector('#numRowsInput').onkeyup = (event) => {
-    if (event.keyCode === 13) {
+  document.querySelector('#numRowsInput').addEventListener('keyup', event => {
+    if (event.code === 'Enter' || event.code === 'NumpadEnter') {
       gameOn(masterData);
     }
-  };
+  });
 
   // allows pushing Submit button to start game
-  document.querySelector('#numRowsButton').onclick = () => {gameOn(masterData)};
+  document.querySelector('#numRowsButton').addEventListener('click', () => {gameOn(masterData);});
 
   // allows pushing Play Again button to play again
-  document.querySelector('#playAgainButton').onclick = () => {playAgain(masterData, gameOn)};
+  document.querySelector('#playAgainButton').addEventListener('click', () => {playAgain(masterData, gameOn);});
 
   // allows pushing Change Size button to change size and play again
-  document.querySelector('#changeSizeButton').onclick = () => {resizeBoard(masterData)};
+  document.querySelector('#changeSizeButton').addEventListener('click', () => {resizeBoard(masterData);});
 }
 
 // sets up event listeners once document has loaded

@@ -17,6 +17,46 @@ const masterData = {
 
 
 
+// Event handling
+
+// triggered during gameplay
+function cellClickEventHandler() {
+  moveMade(this.parentNode.rowIndex, this.cellIndex, masterData);
+}
+
+// runs when DOM content has loaded
+function setUpOnLoadEventListeners() {
+
+  // allows pushing enter key in input box to start game
+  document.querySelector('#numRowsInput').onkeyup = (event) => {
+    if (event.keyCode === 13) {
+      gameOn(masterData);
+    }
+  };
+
+  // allows pushing Submit button to start game
+  document.querySelector('#numRowsButton').onclick = () => {gameOn(masterData)};
+
+  // allows pushing Play Again button to play again
+  document.querySelector('#playAgainButton').onclick = () => {playAgain(masterData, gameOn)};
+
+  // allows pushing Change Size button to change size and play again
+  document.querySelector('#changeSizeButton').onclick = () => {resizeBoard(masterData)};
+}
+
+// sets up event listeners once document has loaded
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setUpOnLoadEventListeners);
+} else {
+    setUpOnLoadEventListeners();
+}
+
+
+
+
+// gameplay
+
+
 function gameOn(masterData) {
 
   // grab number of rows from user input, add it to masterData object:
@@ -53,50 +93,43 @@ function gameOn(masterData) {
 
   // construct board (fill in table)
 
-  const tableHead = document.querySelector('thead');
-  const tableBody = document.querySelector('tbody');
-  const tableFoot = document.querySelector('tfoot');
-
-  function turnCellIntoButton(currCell, cellPos) {
-    currCell.setAttribute('onclick', `moveMade(${cellPos}, masterData)`);
-    currCell.classList.add('clickable');
+  function topOrBottomRowFiller(masterData, currRow) {
+    for (let i = 0; i < masterData.numRows; i++) {
+      let currCell = currRow.insertCell(-1);
+      if (i !== 0 && i !== masterData.numRows - 1) {
+        currCell.classList.add('topOrBottomEdge');
+      }
+    }
   }
 
   // top row
-  const topRow = tableHead.insertRow(-1);
-  for (let i = 0; i < masterData.numRows; i++) {
-    let currCell = topRow.insertCell(-1);
-    if (i !== 0 && i !== masterData.numRows - 1) {
-      currCell.classList.add('topOrBottomEdge');
-    }
-    let cellPos = [0, i];
-    turnCellIntoButton(currCell, cellPos);
-  }
+  const topRow = document.querySelector('thead').insertRow(-1);
+  topOrBottomRowFiller(masterData, topRow);
+
+  // bottom row
+  const bottomRow = document.querySelector('tfoot').insertRow(-1);
+  topOrBottomRowFiller(masterData, bottomRow);
 
   // body rows
-  const numBodyRows = masterData.numRows - 2;
-  for (let i = 0; i < numBodyRows; i++) {
+  const tableBody = document.querySelector('tbody');
+  for (let i = 0; i < masterData.numRows - 2; i++) {
     let currRow = tableBody.insertRow(-1);
     for (let j = 0; j < masterData.numRows; j++) {
       let currCell = currRow.insertCell(-1);
       if (j === 0 || j === masterData.numRows - 1) {
         currCell.classList.add('bodyEdge');
       }
-      let cellPos = [i + 1, j];
-      turnCellIntoButton(currCell, cellPos);
     }
   }
 
-  // bottom row
-  const bottomRow = tableFoot.insertRow(-1);
-  for (let i = 0; i < masterData.numRows; i++) {
-    let currCell = bottomRow.insertCell(-1);
-    if (i !== 0 && i !== masterData.numRows - 1) {
-      currCell.classList.add('topOrBottomEdge');
-    }
-    let cellPos = [masterData.numRows - 1, i];
-    turnCellIntoButton(currCell, cellPos);
-  }
+
+  // buttonize the cells (for both style and function)
+  const allCells = document.querySelectorAll('td');
+  allCells.forEach(cell => {
+    cell.classList.add('clickable');
+    cell.addEventListener('click', cellClickEventHandler, {once:true});
+  })
+
 }
 
 
@@ -108,8 +141,7 @@ function moveMade(cellRow, cellCol, masterData) {
   const playedOnDiagonal0 = (cellRow === cellCol) ? true : false;
   const playedOnDiagonal1 = (cellRow + cellCol === masterData.numRows - 1) ? true : false;
 
-  // make square un-clickable
-  currCell.removeAttribute('onclick');
+  // make square un-clickable (for style only; function handled automatically)
   currCell.classList.remove('clickable');
 
   // mark square with X or O
@@ -139,7 +171,7 @@ function moveMade(cellRow, cellCol, masterData) {
 
 
 
-  // everything else in this function is win/tie handling:
+  // win/tie handling:
 
   let winner;
 
@@ -155,10 +187,10 @@ function moveMade(cellRow, cellCol, masterData) {
     const winMessage = (winner) ? document.createTextNode(`Player ${winner} wins!`) : document.createTextNode('Tie game.');
     document.querySelector('#announceWinner').appendChild(winMessage);
 
-    // un-buttonize the cells
-    let allCells = document.querySelectorAll('td');
-    allCells.forEach((cell) => {
-      cell.removeAttribute('onclick');
+    // un-buttonize the cells (style and function)
+    const allCells = document.querySelectorAll('td');
+    allCells.forEach(cell => {
+      cell.removeEventListener('click', cellClickEventHandler);
       cell.classList.remove('clickable');
     });
 
@@ -214,9 +246,8 @@ function moveMade(cellRow, cellCol, masterData) {
 
 
   // there's no winner, so add 1 to tieCounter for each row, column, and applicable diagonal that is freshly
-  // un-winnable (both players have played in it AND it hasn't already been included in the tieCounter tally).
-  // After adding that 1, set addedToTieCounter property to true in the row/col/diag object, so that
-  // no row/col/diag can be counted toward the tieCounter tally more than once.
+  // un-winnable (both players have played in it AND its addedToTieCounter property is false).
+  // If 1 is added to tieCounter, set that addedToTieCounter property to true.
 
   function tieCounterAdder(p1Status, p2Status, addedToTieCounter, masterData) {
     if (p1Status === true && p2Status === true && addedToTieCounter === false) {
@@ -255,7 +286,7 @@ function moveMade(cellRow, cellCol, masterData) {
 
 
 
-  // check for tie (tieCounter = number of rows + number of columns + number of diagonals)
+  // check for tie (tieCounter === number of rows + number of columns + number of diagonals)
   if (masterData.tieCounter === (2 * masterData.numRows) + 2) {
     winSequence(winner);
   }
@@ -279,8 +310,8 @@ function playAgain(masterData, gameOn) {
   masterData.numRows = numRows;
 
   // delete all table rows
-  let allRows = document.querySelectorAll('tr');
-  allRows.forEach((row) => {row.parentNode.removeChild(row);});
+  const allRows = document.querySelectorAll('tr');
+  allRows.forEach(row => {row.remove();});
 
   gameOn(masterData)
 }
@@ -298,27 +329,9 @@ function resizeBoard(masterData) {
   masterData.dataReset();
 
   // delete all table rows
-  let allRows = document.querySelectorAll('tr');
-  allRows.forEach((row) => {row.parentNode.removeChild(row);});
+  const allRows = document.querySelectorAll('tr');
+  allRows.forEach(row => {row.remove();});
 
   // un-hide inputDiv
   document.querySelector('#inputDiv').classList.remove('hidden');
 }
-
-
-
-// allows pushing enter key in input box to start game
-document.querySelector('#numRowsInput').onkeyup = (event) => {
-  if (event.keyCode === 13) {
-    gameOn(masterData);
-  }
-};
-
-// allows pushing Submit button to start game
-document.querySelector('#numRowsButton').onclick = () => {gameOn(masterData)};
-
-// allows pushing Play Again button to play again
-document.querySelector('#playAgainButton').onclick = () => {playAgain(masterData, gameOn)};
-
-// allows pushing Change Size button to change size and play again
-document.querySelector('#changeSizeButton').onclick = () => {resizeBoard(masterData)};

@@ -48,7 +48,6 @@ if (document.readyState === 'loading') {
 
 function gameOn(masterData) {
 
-  // grab number of rows from user input, add it to masterData object:
   const num = Number(document.querySelector('#numRowsInput').value);
   if (num && num >= 3 && num <= 10) {
     masterData.numRows = num;
@@ -73,8 +72,6 @@ function gameOn(masterData) {
   arrayFiller(masterData.colArray, masterData.numRows);
   arrayFiller(masterData.diagArray, 2);
 
-
-  // hide inputDiv:
   document.querySelector('#inputDiv').classList.add('hidden');
 
 
@@ -106,8 +103,6 @@ function gameOn(masterData) {
     }
   }
 
-
-  // buttonize the cells (for both style and functionality)
   const allCells = document.querySelectorAll('td');
   allCells.forEach(cell => {
     cell.classList.add('clickable');
@@ -120,76 +115,58 @@ function moveMade(cellRow, cellCol, masterData) {
 
   const board = document.querySelector('table');
   const currCell = board.rows[cellRow].cells[cellCol];
+  currCell.classList.remove('clickable');
 
-  // played on diagonals?
-  const diag0 = (cellRow === cellCol) ? true : false;
-  const diag1 = (cellRow + cellCol === masterData.numRows - 1) ? true : false;
-
-  // establish whose turn it is, add 1 to turn counter
   const player = (masterData.turnCounter % 2 === 0) ? 1 : 2;
-  const otherPlayer = (player === 1) ? 2 : 1;
+  const mark = (player === 1) ? document.createTextNode('X') : document.createTextNode('O');
+  currCell.appendChild(mark);
+
   masterData.turnCounter++;
 
-  // "shortcuts" to row/col/diag objects (to reduce verbosity):
   const rowPath = masterData.rowArray[cellRow];
   const colPath = masterData.colArray[cellCol];
   const diag0Path = masterData.diagArray[0];
   const diag1Path = masterData.diagArray[1];
 
+  const diag0 = (cellRow === cellCol) ? true : false;
+  const diag1 = (cellRow + cellCol === masterData.numRows - 1) ? true : false;
 
-  // un-buttonize this square (for style only; event listener removed automatically)
-  currCell.classList.remove('clickable');
 
-  // mark this square with X or O
-  const mark = (player === 1) ? document.createTextNode('X') : document.createTextNode('O');
-  currCell.appendChild(mark);
+  // record move in applicable row/col/diag objects:
 
-  // record that player has now moved in this row and column (and diagonals if applicable)
-  rowPath[`p${player}WasHere`] = true;
-  colPath[`p${player}WasHere`] = true;
+  function recordMove(objectPath, player) {
+    objectPath[`p${player}WasHere`] = true;
+    objectPath.totalPlays++;
+  }
+  recordMove(rowPath, player);
+  recordMove(colPath, player);
   if (diag0) {
-    diag0Path[`p${player}WasHere`] = true;
+    recordMove(diag0Path, player);
   }
   if (diag1) {
-    diag1Path[`p${player}WasHere`] = true;
-  }
-
-  // add 1 to totalPlays counter for this row and column (and diagonals if applicable)
-  rowPath.totalPlays++;
-  colPath.totalPlays++;
-  if (diag0) {
-    diag0Path.totalPlays++;
-  }
-  if (diag1) {
-    diag1Path.totalPlays++;
+    recordMove(diag1Path, player);
   }
 
 
   // this function called in case of win or tie:
 
   function gameOver(winner) {
-    // un-buttonize all cells (for both style and functionality)
     const allCells = document.querySelectorAll('td');
     allCells.forEach(cell => {
       cell.classList.remove('clickable');
       cell.removeEventListener('click', cellClickHandler); // works, but I have ?'s about scope / parameter-passing
     });
-
-    // announce result
     const winMessage = (winner)
     ? document.createTextNode(`Player ${winner} wins!`)
     : document.createTextNode('Tie game.');
     document.querySelector('#announceWinner').appendChild(winMessage);
-
-    // reveal winnerDiv (has result announcement and replay options)
     document.querySelector('#winnerDiv').classList.remove('hidden');
   }
 
-
-  // check for wins
   const winChecker = (objectPath, masterData, otherPlayer) =>
   objectPath.totalPlays === masterData.numRows && objectPath[`p${otherPlayer}WasHere`] === false;
-
+  
+  const otherPlayer = (player === 1) ? 2 : 1;
   const wins = {
     rowWin: winChecker(rowPath, masterData, otherPlayer),
     colWin: winChecker(colPath, masterData, otherPlayer),
@@ -197,7 +174,6 @@ function moveMade(cellRow, cellCol, masterData) {
     diag1Win: winChecker(diag1Path, masterData, otherPlayer)
   };
 
-  // establish winner (null if no wins)
   const winner = (Object.values(wins).includes(true)) ? player : null;
 
   // if there's a winner, style winning cells and end game:
@@ -225,9 +201,7 @@ function moveMade(cellRow, cellCol, masterData) {
   }
 
 
-  // There's no winner, so add 1 to tieCounter for each row, column, and diagonal that is FRESHLY
-  // un-winnable (both players have played in it AND its addedToTieCounter property is false).
-  // If 1 is added to tieCounter, set that addedToTieCounter property to true.
+  // There's no winner, so update tieCounter accordingly (and make note in applicable row/col/diag objects)
 
   function tieCounterAdder(masterData, objectPath) {
     if (objectPath.p1WasHere === true && objectPath.p2WasHere === true && objectPath.addedToTieCounter === false) {
@@ -251,15 +225,12 @@ function moveMade(cellRow, cellCol, masterData) {
 // post-game functions:
 
 function alwaysDoAfterGame() {
-  // delete winner announcement text from its <p>
-  document.querySelector('#announceWinner').textContent = '';
-
-  // hide winnerDiv
-  document.querySelector('#winnerDiv').classList.add('hidden');
-
-  // delete all table rows
   const allRows = document.querySelectorAll('tr');
-  allRows.forEach(row => {row.remove();});
+  allRows.forEach(row => {
+    row.remove();
+  });
+  document.querySelector('#announceWinner').textContent = '';
+  document.querySelector('#winnerDiv').classList.add('hidden');
 }
 
 function playAgain(masterData, gameOn, alwaysDoAfterGame) {
@@ -275,10 +246,6 @@ function playAgain(masterData, gameOn, alwaysDoAfterGame) {
 
 function resizeBoard(masterData, alwaysDoAfterGame) {
   alwaysDoAfterGame();
-
-  // reset masterData object
   masterData.dataReset();
-
-  // un-hide inputDiv
   document.querySelector('#inputDiv').classList.remove('hidden');
 }

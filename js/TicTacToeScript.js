@@ -1,13 +1,13 @@
 const masterData = {
   rowArray: [],
-  columnArray: [],
+  colArray: [],
   diagArray: [], // will have 2 elements: 0th for diag from top-left, 1st for diag from top-right
   tieCounter: 0,
   turnCounter: 0,
   numRows: undefined,
   dataReset() {
     this.rowArray = [];
-    this.columnArray = [];
+    this.colArray = [];
     this.diagArray = [];
     this.tieCounter = 0;
     this.turnCounter = 0;
@@ -82,7 +82,7 @@ function gameOn(masterData) {
   }
 
   arrayFiller(masterData.rowArray, masterData.numRows);
-  arrayFiller(masterData.columnArray, masterData.numRows);
+  arrayFiller(masterData.colArray, masterData.numRows);
   arrayFiller(masterData.diagArray, 2);
 
 
@@ -139,12 +139,12 @@ function moveMade(cellRow, cellCol, masterData) {
   const player = (masterData.turnCounter % 2 === 0) ? 1 : 2;
   const otherPlayer = (player === 1) ? 2 : 1;
 
-  const playedOnDiagonal0 = (cellRow === cellCol) ? true : false;
-  const playedOnDiagonal1 = (cellRow + cellCol === masterData.numRows - 1) ? true : false;
+  const diag0 = (cellRow === cellCol) ? true : false;
+  const diag1 = (cellRow + cellCol === masterData.numRows - 1) ? true : false;
 
   // these "path" declarations are just shortcuts to reduce verbosity:
   const rowPath = masterData.rowArray[cellRow];
-  const colPath = masterData.columnArray[cellCol];
+  const colPath = masterData.colArray[cellCol];
   const diag0Path = masterData.diagArray[0];
   const diag1Path = masterData.diagArray[1];
 
@@ -160,20 +160,20 @@ function moveMade(cellRow, cellCol, masterData) {
   // record that player has now moved in this row and column (and diagonals if applicable)
   rowPath[`p${player}WasHere`] = true;
   colPath[`p${player}WasHere`] = true;
-  if (playedOnDiagonal0) {
+  if (diag0) {
     diag0Path[`p${player}WasHere`] = true;
   }
-  if (playedOnDiagonal1) {
+  if (diag1) {
     diag1Path[`p${player}WasHere`] = true;
   }
 
   // add 1 to totalPlays counter for this row and column (and diagonals if applicable)
   rowPath.totalPlays++;
   colPath.totalPlays++;
-  if (playedOnDiagonal0) {
+  if (diag0) {
     diag0Path.totalPlays++;
   }
-  if (playedOnDiagonal1) {
+  if (diag1) {
     diag1Path.totalPlays++;
   }
 
@@ -230,7 +230,7 @@ function moveMade(cellRow, cellCol, masterData) {
   }
  
   // ... in diagonal 0 if applicable:
-  if (playedOnDiagonal0) {
+  if (diag0) {
     winner = winnerChecker(diag0Path.totalPlays, masterData.numRows, diag0Path[`p${otherPlayer}WasHere`], player);
     if (winner) {
       winSequence(winner);
@@ -242,7 +242,7 @@ function moveMade(cellRow, cellCol, masterData) {
   }
 
   // ... in diagonal 1 if applicable:
-  if (playedOnDiagonal1) {
+  if (diag1) {
     winner = winnerChecker(diag1Path.totalPlays, masterData.numRows, diag1Path[`p${otherPlayer}WasHere`], player);
     if (winner) {
       winSequence(winner);
@@ -279,7 +279,7 @@ function moveMade(cellRow, cellCol, masterData) {
   }
 
   // for diagonal 0 if applicable
-  if (playedOnDiagonal0) {
+  if (diag0) {
     const addedForDiag0 = tieCounterAdder(diag0Path.p1WasHere, diag0Path.p2WasHere, diag0Path.addedToTieCounter, masterData);
     if (addedForDiag0) {
       diag0Path.addedToTieCounter = true;
@@ -287,7 +287,7 @@ function moveMade(cellRow, cellCol, masterData) {
   }
 
   // for diagonal 1 if applicable
-  if (playedOnDiagonal1) {
+  if (diag1) {
     const addedForDiag1 = tieCounterAdder(diag1Path.p1WasHere, diag1Path.p2WasHere, diag1Path.addedToTieCounter, masterData);
     if (addedForDiag1) {
       diag1Path.addedToTieCounter = true;

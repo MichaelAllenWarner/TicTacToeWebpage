@@ -1,5 +1,3 @@
-'use strict';
-
 const masterData = {
   rowArray: [],
   colArray: [],
@@ -18,12 +16,11 @@ const masterData = {
 };
 
 
-
-// Event handling
+// Event handling:
 
 // listener for this handler is added in gameOn()
 function cellClickHandler() {
-  moveMade(this.parentNode.rowIndex, this.cellIndex, masterData);
+  moveMade(this.parentNode.rowIndex, this.cellIndex, masterData); // works, but I have ?'s about scope / parameter-passing
 }
 
 // these listeners added on DOM load:
@@ -43,7 +40,6 @@ if (document.readyState === 'loading') {
 } else {
     onLoadListeners();
 }
-
 
 
 
@@ -73,7 +69,6 @@ function gameOn(masterData) {
       });
     }
   }
-
   arrayFiller(masterData.rowArray, masterData.numRows);
   arrayFiller(masterData.colArray, masterData.numRows);
   arrayFiller(masterData.diagArray, 2);
@@ -83,10 +78,10 @@ function gameOn(masterData) {
   document.querySelector('#inputDiv').classList.add('hidden');
 
 
+  // construct board
 
-  // construct board (fill in table)
-
-  function topOrBottomRowFiller(masterData, currRow) {
+  // top and bottom rows
+  function topOrBottomFiller(masterData, currRow) {
     for (let i = 0; i < masterData.numRows; i++) {
       let currCell = currRow.insertCell(-1);
       if (i !== 0 && i !== masterData.numRows - 1) {
@@ -94,14 +89,10 @@ function gameOn(masterData) {
       }
     }
   }
-
-  // top row
   const topRow = document.querySelector('thead').insertRow(-1);
-  topOrBottomRowFiller(masterData, topRow);
-
-  // bottom row
+  topOrBottomFiller(masterData, topRow);
   const bottomRow = document.querySelector('tfoot').insertRow(-1);
-  topOrBottomRowFiller(masterData, bottomRow);
+  topOrBottomFiller(masterData, bottomRow);
 
   // body rows
   const tableBody = document.querySelector('tbody');
@@ -116,45 +107,42 @@ function gameOn(masterData) {
   }
 
 
-  // buttonize the cells (for both style and function)
+  // buttonize the cells (for both style and functionality)
   const allCells = document.querySelectorAll('td');
   allCells.forEach(cell => {
     cell.classList.add('clickable');
-    cell.addEventListener('click', cellClickHandler, {once:true});
-  })
-
+    cell.addEventListener('click', cellClickHandler, {once:true}); // works, but I have ?'s about scope / parameter-passing
+  });
 }
 
 
 function moveMade(cellRow, cellCol, masterData) {
 
-  const currCell = document.querySelector('table').rows[cellRow].cells[cellCol];
+  const board = document.querySelector('table');
+  const currCell = board.rows[cellRow].cells[cellCol];
 
   // played on diagonals?
   const diag0 = (cellRow === cellCol) ? true : false;
   const diag1 = (cellRow + cellCol === masterData.numRows - 1) ? true : false;
-
 
   // establish whose turn it is, add 1 to turn counter
   const player = (masterData.turnCounter % 2 === 0) ? 1 : 2;
   const otherPlayer = (player === 1) ? 2 : 1;
   masterData.turnCounter++;
 
-
-  // these "path" declarations (to row/col/diag objects) are just shortcuts to reduce verbosity:
+  // "shortcuts" to row/col/diag objects (to reduce verbosity):
   const rowPath = masterData.rowArray[cellRow];
   const colPath = masterData.colArray[cellCol];
   const diag0Path = masterData.diagArray[0];
   const diag1Path = masterData.diagArray[1];
 
 
-  // make this square un-clickable (for style only; function handled automatically)
+  // un-buttonize this square (for style only; event listener removed automatically)
   currCell.classList.remove('clickable');
 
   // mark this square with X or O
   const mark = (player === 1) ? document.createTextNode('X') : document.createTextNode('O');
   currCell.appendChild(mark);
-
 
   // record that player has now moved in this row and column (and diagonals if applicable)
   rowPath[`p${player}WasHere`] = true;
@@ -177,9 +165,28 @@ function moveMade(cellRow, cellCol, masterData) {
   }
 
 
+  // this function called in case of win or tie:
 
-  // win/tie handling:
+  function gameOver(winner) {
+    // un-buttonize all cells (for both style and functionality)
+    const allCells = document.querySelectorAll('td');
+    allCells.forEach(cell => {
+      cell.classList.remove('clickable');
+      cell.removeEventListener('click', cellClickHandler); // works, but I have ?'s about scope / parameter-passing
+    });
 
+    // announce result
+    const winMessage = (winner)
+    ? document.createTextNode(`Player ${winner} wins!`)
+    : document.createTextNode('Tie game.');
+    document.querySelector('#announceWinner').appendChild(winMessage);
+
+    // reveal winnerDiv (has result announcement and replay options)
+    document.querySelector('#winnerDiv').classList.remove('hidden');
+  }
+
+
+  // check for wins
   function winChecker(objectPath, masterData, otherPlayer) {
     if (objectPath.totalPlays === masterData.numRows && objectPath[`p${otherPlayer}WasHere`] === false) {
       return true;
@@ -190,60 +197,38 @@ function moveMade(cellRow, cellCol, masterData) {
     colWin: winChecker(colPath, masterData, otherPlayer),
     diag0Win: winChecker(diag0Path, masterData, otherPlayer),
     diag1Win: winChecker(diag1Path, masterData, otherPlayer)
-  }
+  };
 
-  // highlight any winning cells:
-  if (wins.rowWin) {
-    currCell.parentNode.classList.add('winning');
-  }
-  if (wins.colWin) {
-    for (let i = 0; i < masterData.numRows; i++) {
-      document.querySelector('table').rows[i].cells[cellCol].classList.add('winning');
-    }
-  }
-  if (wins.diag0Win) {
-    for (let i = 0; i < masterData.numRows; i++) {
-      document.querySelector('table').rows[i].cells[i].classList.add('winning');
-    }
-  }
-  if (wins.diag1Win) {
-    for (let i = 0; i < masterData.numRows; i++) {
-      document.querySelector('table').rows[i].cells[masterData.numRows - 1 - i].classList.add('winning');
-    }
-  }
-
-
-
+  // establish winner (null if no wins)
   const winner = (Object.values(wins).includes(true)) ? player : null;
 
-  function gameOver(winner) {
-    // announce winner or tie game
-    const winMessage = (winner)
-    ? document.createTextNode(`Player ${winner} wins!`)
-    : document.createTextNode('Tie game.');
-    document.querySelector('#announceWinner').appendChild(winMessage);
-
-    // un-buttonize the cells (style and function)
-    const allCells = document.querySelectorAll('td');
-    allCells.forEach(cell => {
-      cell.classList.remove('clickable');
-      cell.removeEventListener('click', cellClickHandler);
-    });
-
-    // reveal winnerDiv (announcement, replay options)
-    document.querySelector('#winnerDiv').classList.remove('hidden');
-  }
-
-
-  // end game if there's a winner
+  // if there's a winner, style winning cells and end game:
   if (winner) {
+    if (wins.rowWin) {
+      currCell.parentNode.classList.add('winning');
+    }
+    if (wins.colWin) {
+      for (let i = 0; i < masterData.numRows; i++) {
+        board.rows[i].cells[cellCol].classList.add('winning');
+      }
+    }
+    if (wins.diag0Win) {
+      for (let i = 0; i < masterData.numRows; i++) {
+        board.rows[i].cells[i].classList.add('winning');
+      }
+    }
+    if (wins.diag1Win) {
+      for (let i = 0; i < masterData.numRows; i++) {
+        board.rows[i].cells[masterData.numRows - 1 - i].classList.add('winning');
+      }
+    }
     gameOver(winner);
     return;
   }
 
 
-  // there's no winner, so add 1 to tieCounter for each row, column, and applicable diagonal that is
-  // FRESHLY un-winnable (both players have played in it AND its addedToTieCounter property is false).
+  // There's no winner, so add 1 to tieCounter for each row, column, and diagonal that is FRESHLY
+  // un-winnable (both players have played in it AND its addedToTieCounter property is false).
   // If 1 is added to tieCounter, set that addedToTieCounter property to true.
 
   function tieCounterAdder(masterData, objectPath) {
@@ -252,14 +237,12 @@ function moveMade(cellRow, cellCol, masterData) {
       objectPath.addedToTieCounter = true;
     }
   }
-
   tieCounterAdder(masterData, rowPath);
   tieCounterAdder(masterData, colPath);
   tieCounterAdder(masterData, diag0Path);
   tieCounterAdder(masterData, diag1Path);
 
-
-  // end game if there's a tie
+  // if there's a tie, end game:
   if (masterData.tieCounter === (2 * masterData.numRows) + 2) {
     gameOver(winner);
   }
@@ -267,7 +250,7 @@ function moveMade(cellRow, cellCol, masterData) {
 
 
 
-// endgame functions:
+// post-game functions:
 
 function alwaysDoAfterGame() {
   // delete winner announcement text from its <p>

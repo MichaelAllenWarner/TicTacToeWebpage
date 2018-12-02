@@ -138,8 +138,16 @@ function moveMade(cellRow, cellCol, masterData) {
   const currCell = document.querySelector('table').rows[cellRow].cells[cellCol];
   const player = (masterData.turnCounter % 2 === 0) ? 1 : 2;
   const otherPlayer = (player === 1) ? 2 : 1;
+
   const playedOnDiagonal0 = (cellRow === cellCol) ? true : false;
   const playedOnDiagonal1 = (cellRow + cellCol === masterData.numRows - 1) ? true : false;
+
+  // these "path" declarations are just shortcuts to reduce verbosity:
+  const rowPath = masterData.rowArray[cellRow];
+  const colPath = masterData.columnArray[cellCol];
+  const diag0Path = masterData.diagArray[0];
+  const diag1Path = masterData.diagArray[1];
+
 
   // make square un-clickable (for style only; function handled automatically)
   currCell.classList.remove('clickable');
@@ -150,23 +158,23 @@ function moveMade(cellRow, cellCol, masterData) {
 
 
   // record that player has now moved in this row and column (and diagonals if applicable)
-  masterData.rowArray[cellRow][`p${player}WasHere`] = true;
-  masterData.columnArray[cellCol][`p${player}WasHere`] = true;
+  rowPath[`p${player}WasHere`] = true;
+  colPath[`p${player}WasHere`] = true;
   if (playedOnDiagonal0) {
-    masterData.diagArray[0][`p${player}WasHere`] = true;
+    diag0Path[`p${player}WasHere`] = true;
   }
   if (playedOnDiagonal1) {
-    masterData.diagArray[1][`p${player}WasHere`] = true;
+    diag1Path[`p${player}WasHere`] = true;
   }
 
   // add 1 to totalPlays counter for this row and column (and diagonals if applicable)
-  masterData.rowArray[cellRow].totalPlays++;
-  masterData.columnArray[cellCol].totalPlays++;
+  rowPath.totalPlays++;
+  colPath.totalPlays++;
   if (playedOnDiagonal0) {
-    masterData.diagArray[0].totalPlays++;
+    diag0Path.totalPlays++;
   }
   if (playedOnDiagonal1) {
-    masterData.diagArray[1].totalPlays++;
+    diag1Path.totalPlays++;
   }
 
 
@@ -184,7 +192,9 @@ function moveMade(cellRow, cellCol, masterData) {
   function winSequence(winner) {
 
     // announce winner or tie game
-    const winMessage = (winner) ? document.createTextNode(`Player ${winner} wins!`) : document.createTextNode('Tie game.');
+    const winMessage = (winner) ?
+      document.createTextNode(`Player ${winner} wins!`)
+      : document.createTextNode('Tie game.');
     document.querySelector('#announceWinner').appendChild(winMessage);
 
     // un-buttonize the cells (style and function)
@@ -202,15 +212,15 @@ function moveMade(cellRow, cellCol, masterData) {
   // check for winner ...
 
   // ... in row:
-  winner = winnerChecker(masterData.rowArray[cellRow].totalPlays, masterData.numRows, masterData.rowArray[cellRow][`p${otherPlayer}WasHere`], player);
+  winner = winnerChecker(rowPath.totalPlays, masterData.numRows, rowPath[`p${otherPlayer}WasHere`], player);
   if (winner) {
     winSequence(winner);
-    document.querySelector('table').rows[cellRow].classList.add('winning');
+    currCell.parentNode.classList.add('winning');
     return;
   }
 
   // ... in column:
-  winner = winnerChecker(masterData.columnArray[cellCol].totalPlays, masterData.numRows, masterData.columnArray[cellCol][`p${otherPlayer}WasHere`], player);
+  winner = winnerChecker(colPath.totalPlays, masterData.numRows, colPath[`p${otherPlayer}WasHere`], player);
   if (winner) {
     winSequence(winner);
     for (let i = 0; i < masterData.numRows; i++) {
@@ -221,7 +231,7 @@ function moveMade(cellRow, cellCol, masterData) {
  
   // ... in diagonal 0 if applicable:
   if (playedOnDiagonal0) {
-    winner = winnerChecker(masterData.diagArray[0].totalPlays, masterData.numRows, masterData.diagArray[0][`p${otherPlayer}WasHere`], player);
+    winner = winnerChecker(diag0Path.totalPlays, masterData.numRows, diag0Path[`p${otherPlayer}WasHere`], player);
     if (winner) {
       winSequence(winner);
       for (let i = 0; i < masterData.numRows; i++) {
@@ -233,10 +243,10 @@ function moveMade(cellRow, cellCol, masterData) {
 
   // ... in diagonal 1 if applicable:
   if (playedOnDiagonal1) {
-    winner = winnerChecker(masterData.diagArray[1].totalPlays, masterData.numRows, masterData.diagArray[1][`p${otherPlayer}WasHere`], player);
+    winner = winnerChecker(diag1Path.totalPlays, masterData.numRows, diag1Path[`p${otherPlayer}WasHere`], player);
     if (winner) {
       winSequence(winner);
-      for (let i = 0; i < masterData.numRows; i ++) {
+      for (let i = 0; i < masterData.numRows; i++) {
         document.querySelector('table').rows[i].cells[masterData.numRows - 1 - i].classList.add('winning');
       }
       return;
@@ -257,30 +267,30 @@ function moveMade(cellRow, cellCol, masterData) {
   }
 
   // for row
-  const addedForRow = tieCounterAdder(masterData.rowArray[cellRow].p1WasHere, masterData.rowArray[cellRow].p2WasHere, masterData.rowArray[cellRow].addedToTieCounter, masterData);
+  const addedForRow = tieCounterAdder(rowPath.p1WasHere, rowPath.p2WasHere, rowPath.addedToTieCounter, masterData);
   if (addedForRow) {
-    masterData.rowArray[cellRow].addedToTieCounter = true;
+    rowPath.addedToTieCounter = true;
   }
 
   // for column
-  const addedForCol = tieCounterAdder(masterData.columnArray[cellCol].p1WasHere, masterData.columnArray[cellCol].p2WasHere, masterData.columnArray[cellCol].addedToTieCounter, masterData);
+  const addedForCol = tieCounterAdder(colPath.p1WasHere, colPath.p2WasHere, colPath.addedToTieCounter, masterData);
   if (addedForCol) {
-    masterData.columnArray[cellCol].addedToTieCounter = true;
+    colPath.addedToTieCounter = true;
   }
 
   // for diagonal 0 if applicable
   if (playedOnDiagonal0) {
-    const addedForDiag0 = tieCounterAdder(masterData.diagArray[0].p1WasHere, masterData.diagArray[0].p2WasHere, masterData.diagArray[0].addedToTieCounter, masterData);
+    const addedForDiag0 = tieCounterAdder(diag0Path.p1WasHere, diag0Path.p2WasHere, diag0Path.addedToTieCounter, masterData);
     if (addedForDiag0) {
-      masterData.diagArray[0].addedToTieCounter = true;
+      diag0Path.addedToTieCounter = true;
     }
   }
 
   // for diagonal 1 if applicable
   if (playedOnDiagonal1) {
-    const addedForDiag1 = tieCounterAdder(masterData.diagArray[1].p1WasHere, masterData.diagArray[1].p2WasHere, masterData.diagArray[1].addedToTieCounter, masterData);
+    const addedForDiag1 = tieCounterAdder(diag1Path.p1WasHere, diag1Path.p2WasHere, diag1Path.addedToTieCounter, masterData);
     if (addedForDiag1) {
-      masterData.diagArray[1].addedToTieCounter = true;
+      diag1Path.addedToTieCounter = true;
     }
   }
 

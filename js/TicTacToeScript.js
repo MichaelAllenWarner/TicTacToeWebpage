@@ -187,11 +187,9 @@ function moveMade(cellRow, cellCol, masterData) {
 
 
   // check for wins
-  function winChecker(objectPath, masterData, otherPlayer) {
-    if (objectPath.totalPlays === masterData.numRows && objectPath[`p${otherPlayer}WasHere`] === false) {
-      return true;
-    }
-  }
+  const winChecker = (objectPath, masterData, otherPlayer) =>
+  objectPath.totalPlays === masterData.numRows && objectPath[`p${otherPlayer}WasHere`] === false;
+
   const wins = {
     rowWin: winChecker(rowPath, masterData, otherPlayer),
     colWin: winChecker(colPath, masterData, otherPlayer),

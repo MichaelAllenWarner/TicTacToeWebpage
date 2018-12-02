@@ -1,3 +1,5 @@
+'use strict';
+
 const masterData = {
   rowArray: [],
   colArray: [],
@@ -19,42 +21,33 @@ const masterData = {
 
 // Event handling
 
-// triggered during gameplay
-function cellClickEventHandler() {
+// listener for this handler is added in gameOn()
+function cellClickHandler() {
   moveMade(this.parentNode.rowIndex, this.cellIndex, masterData);
 }
 
-// runs when DOM content has loaded
-function setUpOnLoadEventListeners() {
-
-  // allows pushing enter key in input box to start game
+// these listeners added on DOM load:
+function onLoadListeners() {
   document.querySelector('#numRowsInput').addEventListener('keyup', event => {
     if (event.code === 'Enter' || event.code === 'NumpadEnter') {
       gameOn(masterData);
     }
   });
-
-  // allows pushing Submit button to start game
   document.querySelector('#numRowsButton').addEventListener('click', () => {gameOn(masterData);});
-
-  // allows pushing Play Again button to play again
-  document.querySelector('#playAgainButton').addEventListener('click', () => {playAgain(masterData, gameOn);});
-
-  // allows pushing Change Size button to change size and play again
-  document.querySelector('#changeSizeButton').addEventListener('click', () => {resizeBoard(masterData);});
+  document.querySelector('#playAgainButton').addEventListener('click', () => {playAgain(masterData, gameOn, alwaysDoAfterGame);});
+  document.querySelector('#changeSizeButton').addEventListener('click', () => {resizeBoard(masterData, alwaysDoAfterGame);});
 }
 
-// sets up event listeners once document has loaded
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', setUpOnLoadEventListeners);
+    document.addEventListener('DOMContentLoaded', onLoadListeners);
 } else {
-    setUpOnLoadEventListeners();
+    onLoadListeners();
 }
 
 
 
 
-// gameplay
+// gameplay functions:
 
 
 function gameOn(masterData) {
@@ -127,7 +120,7 @@ function gameOn(masterData) {
   const allCells = document.querySelectorAll('td');
   allCells.forEach(cell => {
     cell.classList.add('clickable');
-    cell.addEventListener('click', cellClickEventHandler, {once:true});
+    cell.addEventListener('click', cellClickHandler, {once:true});
   })
 
 }
@@ -136,23 +129,29 @@ function gameOn(masterData) {
 function moveMade(cellRow, cellCol, masterData) {
 
   const currCell = document.querySelector('table').rows[cellRow].cells[cellCol];
-  const player = (masterData.turnCounter % 2 === 0) ? 1 : 2;
-  const otherPlayer = (player === 1) ? 2 : 1;
 
+  // played on diagonals?
   const diag0 = (cellRow === cellCol) ? true : false;
   const diag1 = (cellRow + cellCol === masterData.numRows - 1) ? true : false;
 
-  // these "path" declarations are just shortcuts to reduce verbosity:
+
+  // establish whose turn it is, add 1 to turn counter
+  const player = (masterData.turnCounter % 2 === 0) ? 1 : 2;
+  const otherPlayer = (player === 1) ? 2 : 1;
+  masterData.turnCounter++;
+
+
+  // these "path" declarations (to row/col/diag objects) are just shortcuts to reduce verbosity:
   const rowPath = masterData.rowArray[cellRow];
   const colPath = masterData.colArray[cellCol];
   const diag0Path = masterData.diagArray[0];
   const diag1Path = masterData.diagArray[1];
 
 
-  // make square un-clickable (for style only; function handled automatically)
+  // make this square un-clickable (for style only; function handled automatically)
   currCell.classList.remove('clickable');
 
-  // mark square with X or O
+  // mark this square with X or O
   const mark = (player === 1) ? document.createTextNode('X') : document.createTextNode('O');
   currCell.appendChild(mark);
 
@@ -181,166 +180,123 @@ function moveMade(cellRow, cellCol, masterData) {
 
   // win/tie handling:
 
-  let winner;
+  function winChecker(objectPath, masterData, otherPlayer) {
+    if (objectPath.totalPlays === masterData.numRows && objectPath[`p${otherPlayer}WasHere`] === false) {
+      return true;
+    }
+  }
+  const wins = {
+    rowWin: winChecker(rowPath, masterData, otherPlayer),
+    colWin: winChecker(colPath, masterData, otherPlayer),
+    diag0Win: winChecker(diag0Path, masterData, otherPlayer),
+    diag1Win: winChecker(diag1Path, masterData, otherPlayer)
+  }
 
-  function winnerChecker(totalPlays, numRows, otherPlayerStatus, player) {
-    if (totalPlays === numRows && otherPlayerStatus === false) {
-      return player;
+  // highlight any winning cells:
+  if (wins.rowWin) {
+    currCell.parentNode.classList.add('winning');
+  }
+  if (wins.colWin) {
+    for (let i = 0; i < masterData.numRows; i++) {
+      document.querySelector('table').rows[i].cells[cellCol].classList.add('winning');
+    }
+  }
+  if (wins.diag0Win) {
+    for (let i = 0; i < masterData.numRows; i++) {
+      document.querySelector('table').rows[i].cells[i].classList.add('winning');
+    }
+  }
+  if (wins.diag1Win) {
+    for (let i = 0; i < masterData.numRows; i++) {
+      document.querySelector('table').rows[i].cells[masterData.numRows - 1 - i].classList.add('winning');
     }
   }
 
-  function winSequence(winner) {
 
+
+  const winner = (Object.values(wins).includes(true)) ? player : null;
+
+  function gameOver(winner) {
     // announce winner or tie game
-    const winMessage = (winner) ?
-      document.createTextNode(`Player ${winner} wins!`)
-      : document.createTextNode('Tie game.');
+    const winMessage = (winner)
+    ? document.createTextNode(`Player ${winner} wins!`)
+    : document.createTextNode('Tie game.');
     document.querySelector('#announceWinner').appendChild(winMessage);
 
     // un-buttonize the cells (style and function)
     const allCells = document.querySelectorAll('td');
     allCells.forEach(cell => {
-      cell.removeEventListener('click', cellClickEventHandler);
       cell.classList.remove('clickable');
+      cell.removeEventListener('click', cellClickHandler);
     });
 
-    // add play again option (un-hide winnerDiv)
+    // reveal winnerDiv (announcement, replay options)
     document.querySelector('#winnerDiv').classList.remove('hidden');
   }
 
 
-  // check for winner ...
-
-  // ... in row:
-  winner = winnerChecker(rowPath.totalPlays, masterData.numRows, rowPath[`p${otherPlayer}WasHere`], player);
+  // end game if there's a winner
   if (winner) {
-    winSequence(winner);
-    currCell.parentNode.classList.add('winning');
+    gameOver(winner);
     return;
   }
 
-  // ... in column:
-  winner = winnerChecker(colPath.totalPlays, masterData.numRows, colPath[`p${otherPlayer}WasHere`], player);
-  if (winner) {
-    winSequence(winner);
-    for (let i = 0; i < masterData.numRows; i++) {
-      document.querySelector('table').rows[i].cells[cellCol].classList.add('winning');
-    }
-    return;
-  }
- 
-  // ... in diagonal 0 if applicable:
-  if (diag0) {
-    winner = winnerChecker(diag0Path.totalPlays, masterData.numRows, diag0Path[`p${otherPlayer}WasHere`], player);
-    if (winner) {
-      winSequence(winner);
-      for (let i = 0; i < masterData.numRows; i++) {
-        document.querySelector('table').rows[i].cells[i].classList.add('winning');
-      }
-      return;
-    }
-  }
 
-  // ... in diagonal 1 if applicable:
-  if (diag1) {
-    winner = winnerChecker(diag1Path.totalPlays, masterData.numRows, diag1Path[`p${otherPlayer}WasHere`], player);
-    if (winner) {
-      winSequence(winner);
-      for (let i = 0; i < masterData.numRows; i++) {
-        document.querySelector('table').rows[i].cells[masterData.numRows - 1 - i].classList.add('winning');
-      }
-      return;
-    }
-  }
-
-
-
-  // there's no winner, so add 1 to tieCounter for each row, column, and applicable diagonal that is freshly
-  // un-winnable (both players have played in it AND its addedToTieCounter property is false).
+  // there's no winner, so add 1 to tieCounter for each row, column, and applicable diagonal that is
+  // FRESHLY un-winnable (both players have played in it AND its addedToTieCounter property is false).
   // If 1 is added to tieCounter, set that addedToTieCounter property to true.
 
-  function tieCounterAdder(p1Status, p2Status, addedToTieCounter, masterData) {
-    if (p1Status === true && p2Status === true && addedToTieCounter === false) {
+  function tieCounterAdder(masterData, objectPath) {
+    if (objectPath.p1WasHere === true && objectPath.p2WasHere === true && objectPath.addedToTieCounter === false) {
       masterData.tieCounter++;
-      return true;
+      objectPath.addedToTieCounter = true;
     }
   }
 
-  // for row
-  const addedForRow = tieCounterAdder(rowPath.p1WasHere, rowPath.p2WasHere, rowPath.addedToTieCounter, masterData);
-  if (addedForRow) {
-    rowPath.addedToTieCounter = true;
-  }
-
-  // for column
-  const addedForCol = tieCounterAdder(colPath.p1WasHere, colPath.p2WasHere, colPath.addedToTieCounter, masterData);
-  if (addedForCol) {
-    colPath.addedToTieCounter = true;
-  }
-
-  // for diagonal 0 if applicable
-  if (diag0) {
-    const addedForDiag0 = tieCounterAdder(diag0Path.p1WasHere, diag0Path.p2WasHere, diag0Path.addedToTieCounter, masterData);
-    if (addedForDiag0) {
-      diag0Path.addedToTieCounter = true;
-    }
-  }
-
-  // for diagonal 1 if applicable
-  if (diag1) {
-    const addedForDiag1 = tieCounterAdder(diag1Path.p1WasHere, diag1Path.p2WasHere, diag1Path.addedToTieCounter, masterData);
-    if (addedForDiag1) {
-      diag1Path.addedToTieCounter = true;
-    }
-  }
+  tieCounterAdder(masterData, rowPath);
+  tieCounterAdder(masterData, colPath);
+  tieCounterAdder(masterData, diag0Path);
+  tieCounterAdder(masterData, diag1Path);
 
 
-
-  // check for tie (tieCounter === number of rows + number of columns + number of diagonals)
+  // end game if there's a tie
   if (masterData.tieCounter === (2 * masterData.numRows) + 2) {
-    winSequence(winner);
+    gameOver(winner);
   }
-
-
-  masterData.turnCounter++;
 }
 
 
-function playAgain(masterData, gameOn) {
 
+// endgame functions:
+
+function alwaysDoAfterGame() {
   // delete winner announcement text from its <p>
   document.querySelector('#announceWinner').textContent = '';
 
   // hide winnerDiv
   document.querySelector('#winnerDiv').classList.add('hidden');
+
+  // delete all table rows
+  const allRows = document.querySelectorAll('tr');
+  allRows.forEach(row => {row.remove();});
+}
+
+function playAgain(masterData, gameOn, alwaysDoAfterGame) {
+  alwaysDoAfterGame();
 
   // reset masterData object, but preserve masterData.numRows
   const numRows = masterData.numRows;
   masterData.dataReset();
   masterData.numRows = numRows;
 
-  // delete all table rows
-  const allRows = document.querySelectorAll('tr');
-  allRows.forEach(row => {row.remove();});
-
   gameOn(masterData)
 }
 
-
-function resizeBoard(masterData) {
-  
-  // delete winner announcement text from its <p>
-  document.querySelector('#announceWinner').textContent = '';
-
-  // hide winnerDiv
-  document.querySelector('#winnerDiv').classList.add('hidden');
+function resizeBoard(masterData, alwaysDoAfterGame) {
+  alwaysDoAfterGame();
 
   // reset masterData object
   masterData.dataReset();
-
-  // delete all table rows
-  const allRows = document.querySelectorAll('tr');
-  allRows.forEach(row => {row.remove();});
 
   // un-hide inputDiv
   document.querySelector('#inputDiv').classList.remove('hidden');

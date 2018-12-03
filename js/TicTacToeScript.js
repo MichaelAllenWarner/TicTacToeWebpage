@@ -57,6 +57,9 @@ function gameOn(masterData) {
     return;
   }
 
+  document.querySelector('#inputDiv').classList.add('hidden');
+
+
   // make an object for every row, column, and diagonal (for tracking win/tie conditions)
   function arrayFiller(arr, upperBound) {
     for (let i = 0; i < upperBound; i++) {
@@ -72,12 +75,7 @@ function gameOn(masterData) {
   arrayFiller(masterData.colArray, masterData.numRows);
   arrayFiller(masterData.diagArray, 2);
 
-  document.querySelector('#inputDiv').classList.add('hidden');
-
-
-  // construct board
-
-  // top and bottom rows
+  // construct top and bottom rows
   function topOrBottomFiller(masterData, currRow) {
     for (let i = 0; i < masterData.numRows; i++) {
       let currCell = currRow.insertCell(-1);
@@ -91,7 +89,7 @@ function gameOn(masterData) {
   const bottomRow = document.querySelector('tfoot').insertRow(-1);
   topOrBottomFiller(masterData, bottomRow);
 
-  // body rows
+  // construct body rows
   const tableBody = document.querySelector('tbody');
   for (let i = 0; i < masterData.numRows - 2; i++) {
     let currRow = tableBody.insertRow(-1);
@@ -118,6 +116,7 @@ function moveMade(cellRow, cellCol, masterData) {
   currCell.classList.remove('clickable');
 
   const player = (masterData.turnCounter % 2 === 0) ? 1 : 2;
+  const otherPlayer = (player === 1) ? 2 : 1;
   const mark = (player === 1) ? document.createTextNode('X') : document.createTextNode('O');
   currCell.appendChild(mark);
 
@@ -131,24 +130,36 @@ function moveMade(cellRow, cellCol, masterData) {
   const diag0 = (cellRow === cellCol) ? true : false;
   const diag1 = (cellRow + cellCol === masterData.numRows - 1) ? true : false;
 
-
-  // record move in applicable row/col/diag objects:
-
-  function recordMove(objectPath, player) {
+  function recordMoveAndCheckWin(objectPath, player, masterData, otherPlayer) {
     objectPath[`p${player}WasHere`] = true;
     objectPath.totalPlays++;
+    return (objectPath.totalPlays === masterData.numRows && objectPath[`p${otherPlayer}WasHere`] === false);
   }
-  recordMove(rowPath, player);
-  recordMove(colPath, player);
-  if (diag0) {
-    recordMove(diag0Path, player);
-  }
-  if (diag1) {
-    recordMove(diag1Path, player);
-  }
+  const wins = {
+    rowWin: recordMoveAndCheckWin(rowPath, player, masterData, otherPlayer),
+    colWin: recordMoveAndCheckWin(colPath, player, masterData, otherPlayer),
+    diag0Win: (diag0) ? recordMoveAndCheckWin(diag0Path, player, masterData, otherPlayer) : false,
+    diag1Win: (diag1) ? recordMoveAndCheckWin(diag1Path, player, masterData, otherPlayer) : false
+  };
 
-
-  // this function called in case of win or tie:
+  function styleWinningCells(wins, board, cellRow, cellCol) {
+    if (wins.rowWin) {
+      board.rows[cellRow].classList.add('winning');
+    }
+    if (wins.colWin || wins.diag0Win || wins.diag1Win) {
+      for (let i = 0; i < board.rows.length; i++) {
+        if (wins.colWin) {
+          board.rows[i].cells[cellCol].classList.add('winning');
+        }
+        if (wins.diag0Win) {
+          board.rows[i].cells[i].classList.add('winning');
+        }
+        if (wins.diag1Win) {
+          board.rows[i].cells[board.rows.length - 1 - i].classList.add('winning');
+        }
+      }
+    }
+  }
 
   function gameOver(winner) {
     const allCells = document.querySelectorAll('td');
@@ -163,45 +174,13 @@ function moveMade(cellRow, cellCol, masterData) {
     document.querySelector('#winnerDiv').classList.remove('hidden');
   }
 
-  const winChecker = (objectPath, masterData, otherPlayer) =>
-  objectPath.totalPlays === masterData.numRows && objectPath[`p${otherPlayer}WasHere`] === false;
-  
-  const otherPlayer = (player === 1) ? 2 : 1;
-  const wins = {
-    rowWin: winChecker(rowPath, masterData, otherPlayer),
-    colWin: winChecker(colPath, masterData, otherPlayer),
-    diag0Win: winChecker(diag0Path, masterData, otherPlayer),
-    diag1Win: winChecker(diag1Path, masterData, otherPlayer)
-  };
-
   const winner = (Object.values(wins).includes(true)) ? player : null;
 
-  // if there's a winner, style winning cells and end game:
   if (winner) {
-    if (wins.rowWin) {
-      currCell.parentNode.classList.add('winning');
-    }
-    if (wins.colWin) {
-      for (let i = 0; i < masterData.numRows; i++) {
-        board.rows[i].cells[cellCol].classList.add('winning');
-      }
-    }
-    if (wins.diag0Win) {
-      for (let i = 0; i < masterData.numRows; i++) {
-        board.rows[i].cells[i].classList.add('winning');
-      }
-    }
-    if (wins.diag1Win) {
-      for (let i = 0; i < masterData.numRows; i++) {
-        board.rows[i].cells[masterData.numRows - 1 - i].classList.add('winning');
-      }
-    }
+    styleWinningCells(wins, board, cellRow, cellCol);
     gameOver(winner);
     return;
   }
-
-
-  // There's no winner, so update tieCounter accordingly (and make note in applicable row/col/diag objects)
 
   function tieCounterAdder(masterData, objectPath) {
     if (objectPath.p1WasHere === true && objectPath.p2WasHere === true && objectPath.addedToTieCounter === false) {
@@ -214,7 +193,7 @@ function moveMade(cellRow, cellCol, masterData) {
   tieCounterAdder(masterData, diag0Path);
   tieCounterAdder(masterData, diag1Path);
 
-  // if there's a tie, end game:
+  // check for tie:
   if (masterData.tieCounter === (2 * masterData.numRows) + 2) {
     gameOver(winner);
   }
@@ -236,7 +215,6 @@ function alwaysDoAfterGame() {
 function playAgain(masterData, gameOn, alwaysDoAfterGame) {
   alwaysDoAfterGame();
 
-  // reset masterData object, but preserve masterData.numRows
   const numRows = masterData.numRows;
   masterData.dataReset();
   masterData.numRows = numRows;

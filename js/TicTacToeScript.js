@@ -22,17 +22,6 @@ function cellClickHandler() {
   moveMade(this.parentNode.rowIndex, this.cellIndex, masterData);
 }
 
-/* Listener for above handler is added in gameOn() and removed in moveMade().
-I'd use an anonymous function or arrow function in gameOn() instead, but
-handler function must be declared for removeEventListener to work, and it
-seems that it must be declared GLOBALLY (doesn't work otherwise). The use
-of 'this' here leaves me uneasy, but I think it's correct. I also don't
-pass this handler as a parameter to gameOn() or moveMade(), because I think
-that those functions don't actually call it; rather, they leave instructions
-for ... something else ... to call it (something w/ access to global scope). */
-
-
-// these listeners added on DOM load:
 function onLoadListeners() {
   document.querySelector('#numRowsInput').addEventListener('keyup', event => {
     if (event.code === 'Enter' || event.code === 'NumpadEnter') {

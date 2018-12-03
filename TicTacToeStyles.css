@@ -65,6 +65,6 @@ td.clickable:active {
   transition-duration: 1s;
 }
 
-#winnerDiv {
+#stopGameDiv, #winnerDiv {
   text-align: center;
 }

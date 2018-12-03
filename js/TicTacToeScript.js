@@ -18,10 +18,19 @@ const masterData = {
 
 // Event handling:
 
-// listener for this handler is added in gameOn()
 function cellClickHandler() {
-  moveMade(this.parentNode.rowIndex, this.cellIndex, masterData); // works, but I have ?'s about scope / parameter-passing
+  moveMade(this.parentNode.rowIndex, this.cellIndex, masterData);
 }
+
+/* Listener for above handler is added in gameOn() and removed in moveMade().
+I'd use an anonymous function or arrow function in gameOn() instead, but
+handler function must be declared for removeEventListener to work, and it
+seems that it must be declared GLOBALLY (doesn't work otherwise). The use
+of 'this' here leaves me uneasy, but I think it's correct. I also don't
+pass this handler as a parameter to gameOn() or moveMade(), because I think
+that those functions don't actually call it; rather, they leave instructions
+for ... something else ... to call it (something w/ access to global scope). */
+
 
 // these listeners added on DOM load:
 function onLoadListeners() {
@@ -30,9 +39,24 @@ function onLoadListeners() {
       gameOn(masterData);
     }
   });
-  document.querySelector('#numRowsButton').addEventListener('click', () => {gameOn(masterData);});
-  document.querySelector('#playAgainButton').addEventListener('click', () => {playAgain(masterData, gameOn, alwaysDoAfterGame);});
-  document.querySelector('#changeSizeButton').addEventListener('click', () => {resizeBoard(masterData, alwaysDoAfterGame);});
+  document.querySelector('#numRowsButton').addEventListener('click', () => {
+    gameOn(masterData);
+  });
+  document.querySelector('#playAgainButton').addEventListener('click', () => {
+    playAgain(masterData, gameOn, alwaysDoBeforeNewGame);
+  });
+  document.querySelector('#changeSizeButton').addEventListener('click', () => {
+    resizeBoard(masterData, alwaysDoBeforeNewGame);
+  });
+  document.querySelector('#stopGameButton').addEventListener('click', () => {
+    const allCells = document.querySelectorAll('td');
+    allCells.forEach(cell => {
+      cell.classList.remove('clickable');
+      cell.removeEventListener('click', cellClickHandler);
+    });
+    document.querySelector('#winnerDiv').classList.remove('hidden');
+    document.querySelector('#stopGameDiv').classList.add('hidden');
+  });
 }
 
 if (document.readyState === 'loading') {
@@ -58,6 +82,7 @@ function gameOn(masterData) {
   }
 
   document.querySelector('#inputDiv').classList.add('hidden');
+  document.querySelector('#stopGameDiv').classList.remove('hidden');
 
 
   // make an object for every row, column, and diagonal (for tracking win/tie conditions)
@@ -78,7 +103,7 @@ function gameOn(masterData) {
   // construct top and bottom rows
   function topOrBottomFiller(masterData, currRow) {
     for (let i = 0; i < masterData.numRows; i++) {
-      let currCell = currRow.insertCell(-1);
+      const currCell = currRow.insertCell(-1);
       if (i !== 0 && i !== masterData.numRows - 1) {
         currCell.classList.add('topOrBottomEdge');
       }
@@ -92,9 +117,9 @@ function gameOn(masterData) {
   // construct body rows
   const tableBody = document.querySelector('tbody');
   for (let i = 0; i < masterData.numRows - 2; i++) {
-    let currRow = tableBody.insertRow(-1);
+    const currRow = tableBody.insertRow(-1);
     for (let j = 0; j < masterData.numRows; j++) {
-      let currCell = currRow.insertCell(-1);
+      const currCell = currRow.insertCell(-1);
       if (j === 0 || j === masterData.numRows - 1) {
         currCell.classList.add('bodyEdge');
       }
@@ -104,7 +129,7 @@ function gameOn(masterData) {
   const allCells = document.querySelectorAll('td');
   allCells.forEach(cell => {
     cell.classList.add('clickable');
-    cell.addEventListener('click', cellClickHandler, {once:true}); // works, but I have ?'s about scope / parameter-passing
+    cell.addEventListener('click', cellClickHandler, {once:true});
   });
 }
 
@@ -165,13 +190,14 @@ function moveMade(cellRow, cellCol, masterData) {
     const allCells = document.querySelectorAll('td');
     allCells.forEach(cell => {
       cell.classList.remove('clickable');
-      cell.removeEventListener('click', cellClickHandler); // works, but I have ?'s about scope / parameter-passing
+      cell.removeEventListener('click', cellClickHandler);
     });
     const winMessage = (winner)
     ? document.createTextNode(`Player ${winner} wins!`)
     : document.createTextNode('Tie game.');
     document.querySelector('#announceWinner').appendChild(winMessage);
     document.querySelector('#winnerDiv').classList.remove('hidden');
+    document.querySelector('#stopGameDiv').classList.add('hidden');
   }
 
   const winner = (Object.values(wins).includes(true)) ? player : null;
@@ -203,7 +229,7 @@ function moveMade(cellRow, cellCol, masterData) {
 
 // post-game functions:
 
-function alwaysDoAfterGame() {
+function alwaysDoBeforeNewGame() {
   const allRows = document.querySelectorAll('tr');
   allRows.forEach(row => {
     row.remove();
@@ -212,8 +238,8 @@ function alwaysDoAfterGame() {
   document.querySelector('#winnerDiv').classList.add('hidden');
 }
 
-function playAgain(masterData, gameOn, alwaysDoAfterGame) {
-  alwaysDoAfterGame();
+function playAgain(masterData, gameOn, alwaysDoBeforeNewGame) {
+  alwaysDoBeforeNewGame();
 
   const numRows = masterData.numRows;
   masterData.dataReset();
@@ -222,8 +248,8 @@ function playAgain(masterData, gameOn, alwaysDoAfterGame) {
   gameOn(masterData)
 }
 
-function resizeBoard(masterData, alwaysDoAfterGame) {
-  alwaysDoAfterGame();
+function resizeBoard(masterData, alwaysDoBeforeNewGame) {
+  alwaysDoBeforeNewGame();
   masterData.dataReset();
   document.querySelector('#inputDiv').classList.remove('hidden');
 }

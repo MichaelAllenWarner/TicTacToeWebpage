@@ -1,6 +1,7 @@
 body {
   background-color: burlywood;
   font-size: larger;
+  font-family: sans-serif;
 }
 
 button, input {
@@ -8,13 +9,13 @@ button, input {
 }
 
 input {
+  width: 40px;
   background-color: cornsilk;
 }
 
 table {
   border-collapse: collapse;
   margin: 5em auto;
-  font-family: sans-serif;
 }
 
 td {
@@ -60,9 +61,13 @@ td.clickable:active {
   display: none;
 }
 
+@keyframes warningAnimation {
+  from {color: black;}
+  to {color: cornsilk;}
+}
+
 .warning {
-  color: red;
-  transition-duration: 1s;
+  animation: .2s 4 alternate warningAnimation;
 }
 
 #stopGameDiv, #winnerDiv {

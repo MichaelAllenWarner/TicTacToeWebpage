@@ -5,6 +5,8 @@ const masterData = {
   tieCounter: 0,
   turnCounter: 0,
   numRows: undefined,
+  computer: false,
+  difficulty: undefined,
   dataReset() {
     this.rowArray = [];
     this.colArray = [];
@@ -25,7 +27,7 @@ function gameOn(masterData) {
     return;
   }
 
-  document.querySelector('#inputDiv').classList.add('hidden');
+  document.querySelector('#optionsDiv').classList.add('hidden');
   document.querySelector('#stopGameDiv').classList.remove('hidden');
 
 
@@ -179,10 +181,17 @@ function moveMade(cellRow, cellCol, masterData) {
   // check for tie:
   if (masterData.tieCounter === (2 * masterData.numRows) + 2) {
     gameOver(winner);
+    return;
   }
 }
 
 
+function triggerComputerMove(masterData, moveMade) {
+  const openCellSpans = document.querySelectorAll('.cellSpan');
+  const cellToPlay = openCellSpans[Math.floor(openCellSpans.length * Math.random())].parentNode;
+  cellToPlay.removeEventListener('click', cellClickHandler);
+  moveMade(cellToPlay.parentNode.rowIndex, cellToPlay.cellIndex, masterData)
+}
 
 function stopGame() {
   const allCells = document.querySelectorAll('td');
@@ -231,11 +240,17 @@ function alwaysDoBeforeNewGame(masterData) {
 function newGame(masterData, gameOn, alwaysDoBeforeNewGame) {
   alwaysDoBeforeNewGame(masterData);
   gameOn(masterData);
+  if (masterData.computer === true) {
+    const whoGoesFirst = Math.floor(2 * Math.random());
+    if (whoGoesFirst === 0) {
+      triggerComputerMove(masterData, moveMade);
+    }
+  }
 }
 
 function resizeBoard(masterData, alwaysDoBeforeNewGame) {
   alwaysDoBeforeNewGame(masterData);
-  document.querySelector('#inputDiv').classList.remove('hidden');
+  document.querySelector('#optionsDiv').classList.remove('hidden');
 }
 
 
@@ -244,21 +259,29 @@ function resizeBoard(masterData, alwaysDoBeforeNewGame) {
 
 function cellClickHandler() {
   moveMade(this.parentNode.rowIndex, this.cellIndex, masterData);
+  if (masterData.computer === true && document.querySelector('.cellSpan')) {
+    triggerComputerMove(masterData, moveMade);
+  }
 }
 
 function onLoadListeners() {
-  document.querySelector('#numRowsInput').addEventListener('keyup', event => {
-    if (event.code === 'Enter' || event.code === 'NumpadEnter') {
-      gameOn(masterData);
-    }
-  });
-  document.querySelector('#playGameButton').addEventListener('click', () => {
+  document.querySelector('#playHvHButton').addEventListener('click', () => {
+    masterData.computer = false;
     gameOn(masterData);
+  });
+  document.querySelector('#playHvCButton').addEventListener('click', () => {
+    masterData.computer = true;
+    masterData.difficulty = (document.querySelector('#easyRadio').checked) ? 'easy' : 'hard';
+    gameOn(masterData);
+    const whoGoesFirst = Math.floor(2 * Math.random());
+    if (whoGoesFirst === 0) {
+      triggerComputerMove(masterData, moveMade);
+    }
   });
   document.querySelector('#newGameButton').addEventListener('click', () => {
     newGame(masterData, gameOn, alwaysDoBeforeNewGame);
   });
-  document.querySelector('#changeSizeButton').addEventListener('click', () => {
+  document.querySelector('#optionsButton').addEventListener('click', () => {
     resizeBoard(masterData, alwaysDoBeforeNewGame);
   });
   document.querySelector('#stopGameButton').addEventListener('click', () => {

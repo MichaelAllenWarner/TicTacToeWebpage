@@ -12,6 +12,10 @@ button, input {
   font-size: large;
 }
 
+button {
+  margin: 1.5em .5em 0 .5em;
+}
+
 input {
   width: 40px;
   background-color: cornsilk;
@@ -19,7 +23,7 @@ input {
 
 table {
   border-collapse: collapse;
-  margin: 3em auto;
+  margin: 2em auto;
 }
 
 td {
@@ -91,4 +95,9 @@ td.clickable:active {
 
 .warning {
   animation: .2s 4 alternate warningAnimation;
+}
+
+#difficultyDiv { /* should be under the "Human vs. Computer" button -- come back and do this correctly */
+  margin-top: 1.5em;
+  margin-left: 3em;
 }

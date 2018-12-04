@@ -18,10 +18,18 @@
     <tfoot></tfoot>
   </table>
 
-  <div id="inputDiv">
+  <div id="optionsDiv">
     <label for="numRowsInput">Select board size <span id="warning">(must be an integer between 3 and 10)</span>.</label>
     <input id="numRowsInput" type="number" min="3" max="10" value="3">
-    <button id ="playGameButton">Play game</button>
+    <br>
+    <button id ="playHvHButton">Human vs. Human</button>
+    <button id="playHvCButton">Human vs. Computer</button>
+    <div id="difficultyDiv"> <!-- place this just under HvCButton ... current CSS is bad here -->
+      <input type="radio" name="difficulty" id="easyRadio" value="easy" checked>Easy<br>
+      <input type="radio" name="difficulty" id="hardRadio" value="hard">Hard
+      <br>(no difference yet, just random moves)
+    </div>
+
   </div>
 
   <div id="stopGameDiv" class="hidden">
@@ -35,7 +43,7 @@
   <div id="winnerDiv" class="hidden">
     <p id="announceWinner"></p>
     <button id="newGameButton">New game</button>
-    <button id ="changeSizeButton">Change size</button>
+    <button id ="optionsButton">Options</button>
   </div>
 
 </body>

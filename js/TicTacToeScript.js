@@ -11,7 +11,6 @@ const masterData = {
     this.diagArray = [];
     this.tieCounter = 0;
     this.turnCounter = 0;
-    this.numRows = undefined;
   }
 };
 
@@ -218,7 +217,7 @@ function resumeGame(masterData) {
   document.querySelector('#resumeGameDiv').classList.add('hidden');
 }
 
-function alwaysDoBeforeNewGame() {
+function alwaysDoBeforeNewGame(masterData) {
   const allRows = document.querySelectorAll('tr');
   allRows.forEach(row => {
     row.remove();
@@ -226,21 +225,16 @@ function alwaysDoBeforeNewGame() {
   document.querySelector('#announceWinner').textContent = '';
   document.querySelector('#winnerDiv').classList.add('hidden');
   document.querySelector('#resumeGameDiv').classList.add('hidden');
+  masterData.dataReset();
 }
 
 function newGame(masterData, gameOn, alwaysDoBeforeNewGame) {
-  alwaysDoBeforeNewGame();
-
-  const numRows = masterData.numRows;
-  masterData.dataReset();
-  masterData.numRows = numRows;
-
-  gameOn(masterData)
+  alwaysDoBeforeNewGame(masterData);
+  gameOn(masterData);
 }
 
 function resizeBoard(masterData, alwaysDoBeforeNewGame) {
-  alwaysDoBeforeNewGame();
-  masterData.dataReset();
+  alwaysDoBeforeNewGame(masterData);
   document.querySelector('#inputDiv').classList.remove('hidden');
 }
 

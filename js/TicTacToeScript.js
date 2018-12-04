@@ -15,9 +15,9 @@ const masterData = {
 };
 
 
-function gameOn(masterData) {
+function gameOn() {
 
-  const num = +document.querySelector('#numRowsInput').value;
+  const num = +document.querySelector('#numRowsInput').value;  
   if (Number.isInteger(num) && num >= 3 && num <= 10) {
     masterData.numRows = num;
   } else {
@@ -70,7 +70,7 @@ function gameOn(masterData) {
     }
   }
 
-  const allCells = document.querySelectorAll('td');
+  const allCells = document.querySelectorAll('td');  
   allCells.forEach(cell => {
     cell.classList.add('clickable');
     cell.addEventListener('click', cellClickHandler, {once:true});
@@ -81,8 +81,9 @@ function gameOn(masterData) {
   });
 }
 
-
-function moveMade(cellRow, cellCol, masterData) {
+function cellClickHandler() {
+  let cellRow = this.parentNode.rowIndex
+  let cellCol = this.cellIndex
 
   const board = document.querySelector('table');
   const currCell = board.rows[cellRow].cells[cellCol];
@@ -242,18 +243,14 @@ function resizeBoard(masterData, alwaysDoBeforeNewGame) {
 
 // Event handling:
 
-function cellClickHandler() {
-  moveMade(this.parentNode.rowIndex, this.cellIndex, masterData);
-}
-
 function onLoadListeners() {
-  document.querySelector('#numRowsInput').addEventListener('keyup', event => {
+  document.querySelector('#numRowsInput').addEventListener('keyup', (event) => {
     if (event.code === 'Enter' || event.code === 'NumpadEnter') {
-      gameOn(masterData);
+      gameOn();
     }
   });
   document.querySelector('#playGameButton').addEventListener('click', () => {
-    gameOn(masterData);
+    gameOn();
   });
   document.querySelector('#newGameButton').addEventListener('click', () => {
     newGame(masterData, gameOn, alwaysDoBeforeNewGame);

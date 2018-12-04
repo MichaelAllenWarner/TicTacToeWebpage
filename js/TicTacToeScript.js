@@ -203,8 +203,10 @@ function stopGame() {
 function resumeGame(masterData) {
   const allCells = document.querySelectorAll('td');
   allCells.forEach(cell => {
-    cell.classList.add('clickable');
-    cell.addEventListener('click', cellClickHandler, {once:true});
+    if (cell.childNodes[0].nodeType === Node.ELEMENT_NODE) {
+      cell.classList.add('clickable');
+      cell.addEventListener('click', cellClickHandler, {once:true});
+    }
   });
   const otherMark = (masterData.turnCounter % 2 === 0) ? 'X' : 'O';
   const allCellSpans = document.querySelectorAll('.cellSpan');

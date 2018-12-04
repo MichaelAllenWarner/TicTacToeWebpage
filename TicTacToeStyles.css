@@ -28,8 +28,8 @@ td {
   font-size: 50px;
   transition-duration: 1s;
   border-radius: 15px;
-  vertical-align: bottom; // for Firefox (displays off-center if value is 'middle')
-  vertical-align: -webkit-baseline-middle;
+  vertical-align: bottom; /* for Firefox (displays off-center if value is 'middle') */
+  vertical-align: -webkit-baseline-middle; /* close enough to 'middle' for Chrome/Safari */
 }
 
 tbody td {
@@ -69,6 +69,11 @@ td.clickable:active {
   opacity: .25;
   transition-duration: .5s;
   color: black;
+  cursor: grab; /* for Safari (td.clickable cursor doesn't always work on Resume Game) */
+}
+
+.cellSpan:active {
+  cursor: grabbing; /* for Safari (td.clickable cursor doesn't always work on Resume Game) */
 }
 
 .winning {

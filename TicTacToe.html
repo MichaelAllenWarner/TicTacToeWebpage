@@ -1,32 +1,40 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Mike's Tic-Tac-Toe</title>
+  <title>Mike's Scalable Tic-Tac-Toe</title>
   <meta charset="UTF-8">
   <link rel="stylesheet" type="text/css" href="TicTacToeStyles.css" />
   <script type="text/javascript" src="js/TicTacToeScript.js"></script>
 </head>
 
 <body>
-  <div id="inputDiv">
-    <label for="numRowsInput">How many rows/columns should the board have? <span id="warning">(Must be an integer between 3 and 10.)</span></label>
-    <input id="numRowsInput" type="number" min="3" max="10" value="3">
-    <button id ="numRowsButton">Play game</button>
-  </div>
+
+  <h1>Mike's Scalable Tic-Tac-Toe</h1>
+  <h2>(No, it isn't fun)</h2>
 
   <table>
     <thead></thead>
     <tbody></tbody>
     <tfoot></tfoot>
-  </table> 
+  </table>
+
+  <div id="inputDiv">
+    <label for="numRowsInput">Select board size <span id="warning">(must be an integer between 3 and 10)</span>.</label>
+    <input id="numRowsInput" type="number" min="3" max="10" value="3">
+    <button id ="playGameButton">Play game</button>
+  </div>
 
   <div id="stopGameDiv" class="hidden">
     <button id="stopGameButton">Stop game</button>
   </div>
 
+  <div id="resumeGameDiv" class="hidden">
+    <button id="resumeGameButton">Resume game</button>
+  </div>
+
   <div id="winnerDiv" class="hidden">
     <p id="announceWinner"></p>
-    <button id="playAgainButton">Play again</button>
+    <button id="newGameButton">New game</button>
     <button id ="changeSizeButton">Change size</button>
   </div>
 

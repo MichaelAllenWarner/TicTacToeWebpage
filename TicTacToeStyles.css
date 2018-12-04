@@ -4,6 +4,10 @@ body {
   font-family: sans-serif;
 }
 
+h1, h2, div, td {
+  text-align: center;
+}
+
 button, input {
   font-size: large;
 }
@@ -15,16 +19,17 @@ input {
 
 table {
   border-collapse: collapse;
-  margin: 5em auto;
+  margin: 3em auto;
 }
 
 td {
-  width: 75px;
-  height: 75px;
-  font-size: 65px;
-  text-align: center;
+  width: 60px;
+  height: 60px;
+  font-size: 50px;
   transition-duration: 1s;
   border-radius: 15px;
+  vertical-align: bottom; // for Firefox (displays off-center if value is 'middle')
+  vertical-align: -webkit-baseline-middle;
 }
 
 tbody td {
@@ -53,6 +58,19 @@ td.clickable:active {
   transition-duration: .5s;
 }
 
+.cellSpan {
+  opacity: 0;
+  transition-duration: .5s;
+  display: inline-block;
+  width: 100%;
+}
+
+.cellSpan:hover {
+  opacity: .25;
+  transition-duration: .5s;
+  color: black;
+}
+
 .winning {
   color: cornsilk;
 }
@@ -68,8 +86,4 @@ td.clickable:active {
 
 .warning {
   animation: .2s 4 alternate warningAnimation;
-}
-
-#stopGameDiv, #winnerDiv {
-  text-align: center;
 }

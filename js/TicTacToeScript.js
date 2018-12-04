@@ -75,6 +75,10 @@ function gameOn(masterData) {
   allCells.forEach(cell => {
     cell.classList.add('clickable');
     cell.addEventListener('click', cellClickHandler, {once:true});
+    const cellSpan = document.createElement('span');
+    cellSpan.classList.add('cellSpan');
+    cellSpan.textContent = 'X';
+    cell.appendChild(cellSpan);
   });
 }
 
@@ -87,8 +91,13 @@ function moveMade(cellRow, cellCol, masterData) {
 
   const player = (masterData.turnCounter % 2 === 0) ? 1 : 2;
   const otherPlayer = (player === 1) ? 2 : 1;
-  const mark = (player === 1) ? document.createTextNode('X') : document.createTextNode('O');
-  currCell.appendChild(mark);
+  const mark = (player === 1) ? 'X' : 'O';
+  const otherMark = (mark === 'X') ? 'O' : 'X';
+  currCell.textContent = mark;
+  const allCellSpans = document.querySelectorAll('.cellSpan');
+  allCellSpans.forEach(cellSpan => {
+    cellSpan.textContent = otherMark;
+  });
 
   masterData.turnCounter++;
 
@@ -137,6 +146,10 @@ function moveMade(cellRow, cellCol, masterData) {
       cell.classList.remove('clickable');
       cell.removeEventListener('click', cellClickHandler);
     });
+    const allCellSpans = document.querySelectorAll('.cellSpan');
+    allCellSpans.forEach(cellSpan => {
+      cellSpan.remove();
+    });
     const winMessage = (winner)
     ? document.createTextNode(`Player ${winner} wins!`)
     : document.createTextNode('Tie game.');
@@ -172,16 +185,35 @@ function moveMade(cellRow, cellCol, masterData) {
 
 
 
-// post-game functions:
-
 function stopGame() {
   const allCells = document.querySelectorAll('td');
   allCells.forEach(cell => {
     cell.classList.remove('clickable');
     cell.removeEventListener('click', cellClickHandler);
   });
+  const allCellSpans = document.querySelectorAll('.cellSpan');
+  allCellSpans.forEach(cellSpan => {
+    cellSpan.textContent = '';
+  });
   document.querySelector('#winnerDiv').classList.remove('hidden');
+  document.querySelector('#resumeGameDiv').classList.remove('hidden');
   document.querySelector('#stopGameDiv').classList.add('hidden');
+}
+
+function resumeGame(masterData) {
+  const allCells = document.querySelectorAll('td');
+  allCells.forEach(cell => {
+    cell.classList.add('clickable');
+    cell.addEventListener('click', cellClickHandler, {once:true});
+  });
+  const otherMark = (masterData.turnCounter % 2 === 0) ? 'X' : 'O';
+  const allCellSpans = document.querySelectorAll('.cellSpan');
+  allCellSpans.forEach(cellSpan => {
+    cellSpan.textContent = otherMark;
+  });
+  document.querySelector('#stopGameDiv').classList.remove('hidden');
+  document.querySelector('#winnerDiv').classList.add('hidden');
+  document.querySelector('#resumeGameDiv').classList.add('hidden');
 }
 
 function alwaysDoBeforeNewGame() {
@@ -191,9 +223,10 @@ function alwaysDoBeforeNewGame() {
   });
   document.querySelector('#announceWinner').textContent = '';
   document.querySelector('#winnerDiv').classList.add('hidden');
+  document.querySelector('#resumeGameDiv').classList.add('hidden');
 }
 
-function playAgain(masterData, gameOn, alwaysDoBeforeNewGame) {
+function newGame(masterData, gameOn, alwaysDoBeforeNewGame) {
   alwaysDoBeforeNewGame();
 
   const numRows = masterData.numRows;
@@ -223,17 +256,20 @@ function onLoadListeners() {
       gameOn(masterData);
     }
   });
-  document.querySelector('#numRowsButton').addEventListener('click', () => {
+  document.querySelector('#playGameButton').addEventListener('click', () => {
     gameOn(masterData);
   });
-  document.querySelector('#playAgainButton').addEventListener('click', () => {
-    playAgain(masterData, gameOn, alwaysDoBeforeNewGame);
+  document.querySelector('#newGameButton').addEventListener('click', () => {
+    newGame(masterData, gameOn, alwaysDoBeforeNewGame);
   });
   document.querySelector('#changeSizeButton').addEventListener('click', () => {
     resizeBoard(masterData, alwaysDoBeforeNewGame);
   });
   document.querySelector('#stopGameButton').addEventListener('click', () => {
     stopGame();
+  });
+  document.querySelector('#resumeGameButton').addEventListener('click', () => {
+    resumeGame(masterData);
   });
   document.querySelector('#warning').addEventListener('animationend', function() {
     this.classList.remove('warning'); 

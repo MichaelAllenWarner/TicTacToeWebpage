@@ -24,7 +24,7 @@ function gameOn(masterData) {
     masterData.numRows = num;
   } else {
     document.querySelector('#warning').classList.add('warning');
-    return;
+    return 'badInput';
   }
 
   document.querySelector('#optionsDiv').classList.add('hidden');
@@ -272,10 +272,12 @@ function onLoadListeners() {
   document.querySelector('#playHvCButton').addEventListener('click', () => {
     masterData.computer = true;
     masterData.difficulty = (document.querySelector('#easyRadio').checked) ? 'easy' : 'hard';
-    gameOn(masterData);
-    const whoGoesFirst = Math.floor(2 * Math.random());
-    if (whoGoesFirst === 0) {
-      triggerComputerMove(masterData, moveMade);
+    const inputQuery = gameOn(masterData);
+    if (inputQuery !== 'badInput') {
+      const whoGoesFirst = Math.floor(2 * Math.random());
+      if (whoGoesFirst === 0) {
+        triggerComputerMove(masterData, moveMade);
+      }
     }
   });
   document.querySelector('#newGameButton').addEventListener('click', () => {

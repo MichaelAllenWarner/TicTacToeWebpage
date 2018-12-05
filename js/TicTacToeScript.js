@@ -189,8 +189,7 @@ function moveMade(cellRow, cellCol, masterData) {
 function triggerComputerMove(masterData, moveMade) {
   const openCellSpans = document.querySelectorAll('.cellSpan');
   const cellToPlay = openCellSpans[Math.floor(openCellSpans.length * Math.random())].parentNode;
-  cellToPlay.removeEventListener('click', cellClickHandler);
-  moveMade(cellToPlay.parentNode.rowIndex, cellToPlay.cellIndex, masterData)
+  cellToPlay.click();
 }
 
 function stopGame() {
@@ -259,7 +258,10 @@ function resizeBoard(masterData, alwaysDoBeforeNewGame) {
 
 function cellClickHandler() {
   moveMade(this.parentNode.rowIndex, this.cellIndex, masterData);
-  if (masterData.computer === true && document.querySelector('.cellSpan')) {
+  if (!this.matches(':hover') && document.querySelector('.cellSpan')) {
+    this.classList.add('computerMove');
+  }
+  if (masterData.computer === true && document.querySelector('.cellSpan') && this.matches(':hover')) {
     triggerComputerMove(masterData, moveMade);
   }
 }

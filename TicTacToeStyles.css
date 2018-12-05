@@ -62,6 +62,15 @@ td.clickable:active {
   transition-duration: .5s;
 }
 
+@keyframes computer {
+  from {color: cornsilk;}
+  to {color: black;}
+}
+
+td.computerMove {
+  animation: 1s 1 normal computer;
+}
+
 .cellSpan {
   opacity: 0;
   transition-duration: .5s;

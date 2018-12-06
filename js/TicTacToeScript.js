@@ -7,6 +7,7 @@ const masterData = {
   numRows: undefined,
   computer: false,
   difficulty: undefined,
+  computerAnimationsInProgress: 0,
   dataReset() {
     this.rowArray = [];
     this.colArray = [];
@@ -162,7 +163,19 @@ function moveMade(cellRow, cellCol, masterData) {
   const winner = (Object.values(wins).includes(true)) ? player : null;
 
   if (winner) {
-    styleWinningCells(wins, board, cellRow, cellCol);
+    if (masterData.computerAnimationsInProgress === 0 || currCell.matches(':hover')) {
+      styleWinningCells(wins, board, cellRow, cellCol);
+    } else { // otherwise computer's winning cells might not animate all together
+      const computerCellsThatMightBeAnimating = document.querySelectorAll('.computerMove');
+      computerCellsThatMightBeAnimating.forEach(candidate => {
+        candidate.addEventListener('animationend', (() => {
+          if (masterData.computerAnimationsInProgress === 0) {
+            styleWinningCells(wins, board, cellRow, cellCol);
+          }
+        }).bind(styleWinningCells, wins, board, cellRow, cellCol), {once:true});
+      });
+    }
+    
     gameOver(winner);
     return;
   }
@@ -259,6 +272,10 @@ function resizeBoard(masterData, alwaysDoBeforeNewGame) {
 function cellClickHandler() {
   moveMade(this.parentNode.rowIndex, this.cellIndex, masterData);
   if (!this.matches(':hover') && document.querySelector('.cellSpan')) {
+    masterData.computerAnimationsInProgress++;
+    this.addEventListener('animationend', () => {
+      masterData.computerAnimationsInProgress--;
+    }, {once:true});
     this.classList.add('computerMove');
   }
   if (masterData.computer === true && document.querySelector('.cellSpan') && this.matches(':hover')) {

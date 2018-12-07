@@ -1,3 +1,5 @@
+'use strict';
+
 const masterData = {
   rowArray: [],
   colArray: [],
@@ -168,11 +170,11 @@ function moveMade(cellRow, cellCol, masterData) {
     if (masterData.computerAnimationsInProgress !== 0 && !currCell.matches(':hover')) {
       const computerCellsThatMightBeAnimating = document.querySelectorAll('.computerMove');
       computerCellsThatMightBeAnimating.forEach(candidate => {
-        candidate.addEventListener('animationend', (() => {
+        candidate.addEventListener('animationend', () => {
           if (masterData.computerAnimationsInProgress === 0) {
             styleWinningCells(wins, board, cellRow, cellCol);
           }
-        }).bind(styleWinningCells, wins, board, cellRow, cellCol), {once:true});
+        }, {once:true});
       });
     }
     if (masterData.computerAnimationsInProgress === 0 || currCell.matches(':hover')) {

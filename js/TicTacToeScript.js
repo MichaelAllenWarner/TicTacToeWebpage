@@ -14,6 +14,7 @@ const masterData = {
     this.diagArray = [];
     this.tieCounter = 0;
     this.turnCounter = 0;
+    this.computerAnimationsInProgress = 0;
   }
 };
 
@@ -163,9 +164,8 @@ function moveMade(cellRow, cellCol, masterData) {
   const winner = (Object.values(wins).includes(true)) ? player : null;
 
   if (winner) {
-    if (masterData.computerAnimationsInProgress === 0 || currCell.matches(':hover')) {
-      styleWinningCells(wins, board, cellRow, cellCol);
-    } else { // otherwise computer's winning cells might not animate all together
+    // to make sure computer's winning cells always get styled all at once:
+    if (masterData.computerAnimationsInProgress !== 0 && !currCell.matches(':hover')) {
       const computerCellsThatMightBeAnimating = document.querySelectorAll('.computerMove');
       computerCellsThatMightBeAnimating.forEach(candidate => {
         candidate.addEventListener('animationend', (() => {
@@ -175,7 +175,9 @@ function moveMade(cellRow, cellCol, masterData) {
         }).bind(styleWinningCells, wins, board, cellRow, cellCol), {once:true});
       });
     }
-    
+    if (masterData.computerAnimationsInProgress === 0 || currCell.matches(':hover')) {
+      styleWinningCells(wins, board, cellRow, cellCol);
+    }
     gameOver(winner);
     return;
   }

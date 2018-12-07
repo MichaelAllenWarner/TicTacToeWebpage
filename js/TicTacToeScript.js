@@ -1,5 +1,3 @@
-'use strict';
-
 const masterData = {
   rowArray: [],
   colArray: [],

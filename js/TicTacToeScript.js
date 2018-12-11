@@ -204,10 +204,12 @@ function moveMade(cellRow, cellCol, masterData) {
 // current computer strategy:
 // 1) find imminent self-victory
 // 2) find imminent otherPlayer-victory and stop it
-// 3) play a square w/ most player marks in cross-lines that have NO other-player marks
-// 4) if (3) don't exist, play a square w/ most OTHER-player cross-marks with NO current-player marks
-// 5) play a random open cell
-// note: it's a start, but it limits computer moves (e.g., will never play in opposite corners if you play in middle)
+// 3) create a fork if possible
+// 4) play a square w/ most player marks in cross-lines that have NO other-player marks
+// 5) if (3) don't exist, play a square w/ most OTHER-player cross-marks with NO current-player marks
+// 6) play a random open cell
+// note: it's a start, but it limits computer moves (e.g., will never play in opposite corners if you play in middle);
+// 4 and 5 aren't particularly good strategy
 
 function triggerComputerMove(masterData) {
   const openCellSpans = document.querySelectorAll('.cellSpan');
@@ -231,6 +233,26 @@ function triggerComputerMove(masterData) {
       const loseThreatFinder = (objectPath, masterData) => !objectPath[`p${player}Plays`] && objectPath.totalPlays === masterData.numRows - 1;
       const loseThreat = (loseThreatFinder(rowPath, masterData) || loseThreatFinder(colPath, masterData) || (diag0 && loseThreatFinder(diag0Path, masterData)) || (diag1 && loseThreatFinder(diag1Path, masterData)));
 
+      const ownForkOppFinder = (objectPath, masterData) => (!objectPath[`p${otherPlayer}Plays`] && objectPath.totalPlays === masterData.numRows - 2);
+      let ownForkOppCounter = 0;
+      if (ownForkOppFinder(rowPath, masterData)) {
+        ownForkOppCounter++;
+      }
+      if (ownForkOppFinder(colPath, masterData)) {
+        ownForkOppCounter++;
+      }
+      if (diag0) {
+        if (ownForkOppFinder(diag0Path, masterData)) {
+          ownForkOppCounter++;
+        }
+      }
+      if (diag1) {
+        if (ownForkOppFinder(diag1Path, masterData)) {
+          ownForkOppCounter++;
+        }
+      }
+      const ownForkOpp = (ownForkOppCounter >= 2) ? true : false;
+
       const pButNotOPFinder = objectPath => (objectPath[`p${player}Plays`] && !objectPath[`p${otherPlayer}Plays`]) ? objectPath[`p${player}Plays`] : 0;
       let pMarksWithNoOPMarks = pButNotOPFinder(rowPath) + pButNotOPFinder(colPath);
       if (diag0) {
@@ -253,8 +275,9 @@ function triggerComputerMove(masterData) {
         openCellSpansIndex: index,
         winOpp,
         loseThreat,
+        ownForkOpp,
         pMarksWithNoOPMarks,
-        oPMarksWithNoPMarks
+        oPMarksWithNoPMarks,
       });
     });
 
@@ -280,6 +303,16 @@ function triggerComputerMove(masterData) {
       cellToPlay.click();
       return;
     }
+    openCellObjects.forEach(obj => {
+      if (obj.ownForkOpp) {
+        cellToPlay = openCellSpans[obj.openCellSpansIndex];
+      }
+    });
+    if (cellToPlay) {
+      cellToPlay.click();
+      return;
+    }
+
     openCellObjects.sort((a, b) => b.pMarksWithNoOPMarks - a.pMarksWithNoOPMarks);
     const maxPMarksWithNoOPMarks = openCellObjects[0].pMarksWithNoOPMarks;
     if (maxPMarksWithNoOPMarks !== 0) {

@@ -6,7 +6,6 @@ const masterData = {
   turnCounter: 0,
   numRows: undefined,
   computer: false,
-  difficulty: undefined,
   computerAnimationsInProgress: 0,
   dataReset() {
     this.rowArray = [];
@@ -213,139 +212,139 @@ function moveMade(cellRow, cellCol, masterData) {
 
 function triggerComputerMove(masterData) {
   const openCellSpans = document.querySelectorAll('.cellSpan');
-  if (masterData.difficulty === 'easy' || masterData.difficulty === 'hard') {
-    const player = (masterData.turnCounter % 2 === 0) ? 1 : 2;
-    const otherPlayer = (player === 1) ? 2 : 1;
-    const openCellObjects = [];
-    openCellSpans.forEach((span, index) => {
-      const cellRow = span.parentNode.parentNode.rowIndex;
-      const cellCol = span.parentNode.cellIndex;
-      const rowPath = masterData.rowArray[cellRow];
-      const colPath = masterData.colArray[cellCol];
-      const diag0Path = masterData.diagArray[0];
-      const diag1Path = masterData.diagArray[1];
-      const diag0 = (cellRow === cellCol) ? true : false;
-      const diag1 = (cellRow + cellCol === masterData.numRows - 1) ? true : false;
 
-      const winOppFinder = (objectPath, masterData) => !objectPath[`p${otherPlayer}Plays`] && objectPath.totalPlays === masterData.numRows - 1;
-      const winOpp = (winOppFinder(rowPath, masterData) || winOppFinder(colPath, masterData) || (diag0 && winOppFinder(diag0Path, masterData)) || (diag1 && winOppFinder(diag1Path, masterData)));
+  const player = (masterData.turnCounter % 2 === 0) ? 1 : 2;
+  const otherPlayer = (player === 1) ? 2 : 1;
+  const openCellObjects = [];
+  openCellSpans.forEach((span, index) => {
+    const cellRow = span.parentNode.parentNode.rowIndex;
+    const cellCol = span.parentNode.cellIndex;
+    const rowPath = masterData.rowArray[cellRow];
+    const colPath = masterData.colArray[cellCol];
+    const diag0Path = masterData.diagArray[0];
+    const diag1Path = masterData.diagArray[1];
+    const diag0 = (cellRow === cellCol) ? true : false;
+    const diag1 = (cellRow + cellCol === masterData.numRows - 1) ? true : false;
 
-      const loseThreatFinder = (objectPath, masterData) => !objectPath[`p${player}Plays`] && objectPath.totalPlays === masterData.numRows - 1;
-      const loseThreat = (loseThreatFinder(rowPath, masterData) || loseThreatFinder(colPath, masterData) || (diag0 && loseThreatFinder(diag0Path, masterData)) || (diag1 && loseThreatFinder(diag1Path, masterData)));
+    const winOppFinder = (objectPath, masterData) => !objectPath[`p${otherPlayer}Plays`] && objectPath.totalPlays === masterData.numRows - 1;
+    const winOpp = (winOppFinder(rowPath, masterData) || winOppFinder(colPath, masterData) || (diag0 && winOppFinder(diag0Path, masterData)) || (diag1 && winOppFinder(diag1Path, masterData)));
 
-      const ownForkOppFinder = (objectPath, masterData) => (!objectPath[`p${otherPlayer}Plays`] && objectPath.totalPlays === masterData.numRows - 2);
-      let ownForkOppCounter = 0;
-      if (ownForkOppFinder(rowPath, masterData)) {
+    const loseThreatFinder = (objectPath, masterData) => !objectPath[`p${player}Plays`] && objectPath.totalPlays === masterData.numRows - 1;
+    const loseThreat = (loseThreatFinder(rowPath, masterData) || loseThreatFinder(colPath, masterData) || (diag0 && loseThreatFinder(diag0Path, masterData)) || (diag1 && loseThreatFinder(diag1Path, masterData)));
+
+    const ownForkOppFinder = (objectPath, masterData) => (!objectPath[`p${otherPlayer}Plays`] && objectPath.totalPlays === masterData.numRows - 2);
+    let ownForkOppCounter = 0;
+    if (ownForkOppFinder(rowPath, masterData)) {
+      ownForkOppCounter++;
+    }
+    if (ownForkOppFinder(colPath, masterData)) {
+      ownForkOppCounter++;
+    }
+    if (diag0) {
+      if (ownForkOppFinder(diag0Path, masterData)) {
         ownForkOppCounter++;
       }
-      if (ownForkOppFinder(colPath, masterData)) {
+    }
+    if (diag1) {
+      if (ownForkOppFinder(diag1Path, masterData)) {
         ownForkOppCounter++;
       }
-      if (diag0) {
-        if (ownForkOppFinder(diag0Path, masterData)) {
-          ownForkOppCounter++;
-        }
-      }
-      if (diag1) {
-        if (ownForkOppFinder(diag1Path, masterData)) {
-          ownForkOppCounter++;
-        }
-      }
-      const ownForkOpp = (ownForkOppCounter >= 2) ? true : false;
+    }
+    const ownForkOpp = (ownForkOppCounter >= 2) ? true : false;
 
-      const pButNotOPFinder = objectPath => (objectPath[`p${player}Plays`] && !objectPath[`p${otherPlayer}Plays`]) ? objectPath[`p${player}Plays`] : 0;
-      let pMarksWithNoOPMarks = pButNotOPFinder(rowPath) + pButNotOPFinder(colPath);
-      if (diag0) {
-        pMarksWithNoOPMarks = pMarksWithNoOPMarks + pButNotOPFinder(diag0);
-      }
-      if (diag1) {
-        pMarksWithNoOPMarks = pMarksWithNoOPMarks + pButNotOPFinder(diag1);
-      }
+    const pButNotOPFinder = objectPath => (objectPath[`p${player}Plays`] && !objectPath[`p${otherPlayer}Plays`]) ? objectPath[`p${player}Plays`] : 0;
+    let pMarksWithNoOPMarks = pButNotOPFinder(rowPath) + pButNotOPFinder(colPath);
+    if (diag0) {
+      pMarksWithNoOPMarks = pMarksWithNoOPMarks + pButNotOPFinder(diag0);
+    }
+    if (diag1) {
+      pMarksWithNoOPMarks = pMarksWithNoOPMarks + pButNotOPFinder(diag1);
+    }
 
-      const oPButNotPFinder = objectPath => (objectPath[`p${otherPlayer}Plays`] && !objectPath[`p${player}Plays`]) ? objectPath[`p${otherPlayer}Plays`] : 0;
-      let oPMarksWithNoPMarks = oPButNotPFinder(rowPath) + oPButNotPFinder(colPath);
-      if (diag0) {
-        oPMarksWithNoPMarks = oPMarksWithNoPMarks + oPButNotPFinder(diag0);
-      }
-      if (diag1) {
-        oPMarksWithNoPMarks = oPMarksWithNoPMarks + oPButNotPFinder(diag1);
-      }
+    const oPButNotPFinder = objectPath => (objectPath[`p${otherPlayer}Plays`] && !objectPath[`p${player}Plays`]) ? objectPath[`p${otherPlayer}Plays`] : 0;
+    let oPMarksWithNoPMarks = oPButNotPFinder(rowPath) + oPButNotPFinder(colPath);
+    if (diag0) {
+      oPMarksWithNoPMarks = oPMarksWithNoPMarks + oPButNotPFinder(diag0);
+    }
+    if (diag1) {
+      oPMarksWithNoPMarks = oPMarksWithNoPMarks + oPButNotPFinder(diag1);
+    }
 
-      openCellObjects.push({
-        openCellSpansIndex: index,
-        winOpp,
-        loseThreat,
-        ownForkOpp,
-        pMarksWithNoOPMarks,
-        oPMarksWithNoPMarks,
-      });
+    openCellObjects.push({
+      openCellSpansIndex: index,
+      winOpp,
+      loseThreat,
+      ownForkOpp,
+      pMarksWithNoOPMarks,
+      oPMarksWithNoPMarks,
     });
+  });
 
-    let cellToPlay;
+  let cellToPlay;
 
-    for (let i = 0; i < openCellObjects.length; i++) {
-      if (openCellObjects[i]['winOpp']) {
-        cellToPlay = openCellSpans[openCellObjects[i].openCellSpansIndex];
-        break;
-      }
+  for (let i = 0; i < openCellObjects.length; i++) {
+    if (openCellObjects[i]['winOpp']) {
+      cellToPlay = openCellSpans[openCellObjects[i].openCellSpansIndex];
+      break;
     }
-    if (cellToPlay) {
-      cellToPlay.click();
-      return;
-    }
-    for (let i = 0; i < openCellObjects.length; i++) {
-      if (openCellObjects[i]['loseThreat']) {
-        cellToPlay = openCellSpans[openCellObjects[i].openCellSpansIndex];
-        break;
-      }
-    }
-    if (cellToPlay) {
-      cellToPlay.click();
-      return;
-    }
-    openCellObjects.forEach(obj => {
-      if (obj.ownForkOpp) {
-        cellToPlay = openCellSpans[obj.openCellSpansIndex];
-      }
-    });
-    if (cellToPlay) {
-      cellToPlay.click();
-      return;
-    }
-
-    openCellObjects.sort((a, b) => b.pMarksWithNoOPMarks - a.pMarksWithNoOPMarks);
-    const maxPMarksWithNoOPMarks = openCellObjects[0].pMarksWithNoOPMarks;
-    if (maxPMarksWithNoOPMarks !== 0) {
-      const possibleSquares = [];
-      for (let i = 0; i < openCellObjects.length; i++) {
-        if (openCellObjects[i].pMarksWithNoOPMarks === maxPMarksWithNoOPMarks) {
-          possibleSquares.push(openCellObjects[i].openCellSpansIndex);
-        } else {
-          break;
-        }
-      }
-      cellToPlay = openCellSpans[possibleSquares[Math.floor(possibleSquares.length * Math.random())]];
-      cellToPlay.click();
-      return;
-    }
-    openCellObjects.sort((a, b) => b.oPMarksWithNoPMarks - a.oPMarksWithNoPMarks);
-    const maxOPMarksWithNoPMarks = openCellObjects[0].oPMarksWithNoPMarks;
-    if (maxOPMarksWithNoPMarks !== 0) {
-      const possibleSquares = [];
-      for (let i = 0; i < openCellObjects.length; i++) {
-        if (openCellObjects[i].oPMarksWithNoPMarks === maxOPMarksWithNoPMarks) {
-          possibleSquares.push(openCellObjects[i].openCellSpansIndex);
-        } else {
-          break;
-        }
-      }
-      cellToPlay = openCellSpans[possibleSquares[Math.floor(possibleSquares.length * Math.random())]];
-      cellToPlay.click();
-      return;
-    }
-    cellToPlay = openCellSpans[Math.floor(openCellSpans.length * Math.random())].parentNode;
-    cellToPlay.click();
   }
+  if (cellToPlay) {
+    cellToPlay.click();
+    return;
+  }
+  for (let i = 0; i < openCellObjects.length; i++) {
+    if (openCellObjects[i]['loseThreat']) {
+      cellToPlay = openCellSpans[openCellObjects[i].openCellSpansIndex];
+      break;
+    }
+  }
+  if (cellToPlay) {
+    cellToPlay.click();
+    return;
+  }
+  openCellObjects.forEach(obj => {
+    if (obj.ownForkOpp) {
+      cellToPlay = openCellSpans[obj.openCellSpansIndex];
+    }
+  });
+  if (cellToPlay) {
+    cellToPlay.click();
+    return;
+  }
+
+  openCellObjects.sort((a, b) => b.pMarksWithNoOPMarks - a.pMarksWithNoOPMarks);
+  const maxPMarksWithNoOPMarks = openCellObjects[0].pMarksWithNoOPMarks;
+  if (maxPMarksWithNoOPMarks !== 0) {
+    const possibleSquares = [];
+    for (let i = 0; i < openCellObjects.length; i++) {
+      if (openCellObjects[i].pMarksWithNoOPMarks === maxPMarksWithNoOPMarks) {
+        possibleSquares.push(openCellObjects[i].openCellSpansIndex);
+      } else {
+        break;
+      }
+    }
+    cellToPlay = openCellSpans[possibleSquares[Math.floor(possibleSquares.length * Math.random())]];
+    cellToPlay.click();
+    return;
+  }
+  openCellObjects.sort((a, b) => b.oPMarksWithNoPMarks - a.oPMarksWithNoPMarks);
+  const maxOPMarksWithNoPMarks = openCellObjects[0].oPMarksWithNoPMarks;
+  if (maxOPMarksWithNoPMarks !== 0) {
+    const possibleSquares = [];
+    for (let i = 0; i < openCellObjects.length; i++) {
+      if (openCellObjects[i].oPMarksWithNoPMarks === maxOPMarksWithNoPMarks) {
+        possibleSquares.push(openCellObjects[i].openCellSpansIndex);
+      } else {
+        break;
+      }
+    }
+    cellToPlay = openCellSpans[possibleSquares[Math.floor(possibleSquares.length * Math.random())]];
+    cellToPlay.click();
+    return;
+  }
+  cellToPlay = openCellSpans[Math.floor(openCellSpans.length * Math.random())].parentNode;
+  cellToPlay.click();
+
 }
 
 function stopGame() {
@@ -433,7 +432,6 @@ function onLoadListeners() {
   });
   document.querySelector('#playHvCButton').addEventListener('click', () => {
     masterData.computer = true;
-    masterData.difficulty = (document.querySelector('#easyRadio').checked) ? 'easy' : 'hard';
     const inputQuery = gameOn(masterData);
     if (inputQuery !== 'badInput') {
       const whoGoesFirst = Math.floor(2 * Math.random());

@@ -105,8 +105,3 @@ td.computerMove {
 .warning {
   animation: .2s 4 alternate warningAnimation;
 }
-
-#difficultyDiv { /* should be under the "Human vs. Computer" button -- come back and do this correctly */
-  margin-top: 1.5em;
-  margin-left: 3em;
-}
